@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "codeguard-security@project-codeguard": true
+  }
+}
