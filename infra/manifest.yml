@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: 2606-deployment
+  labels:
+    app: 2606-app
+spec:
+  replicas: 2 # コンテナを2つ並列で動かす
+  selector:
+    matchLabels:
+      app: 2606-app
+  template:
+    metadata:
+      labels:
+        app: 2606-app
+    spec:
+      containers:
+      - name: 2606-app
+        image: 431343616414.dkr.ecr.ap-northeast-1.amazonaws.com/2606:v1.0 # ここに独自のECRなどのコンテナイメージを指定します
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: 2606-app-Service
+spec:
+  type: NodePort # ロードバランサー（ALB）と連携するための設定
+  selector:
+    app: 2606-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
