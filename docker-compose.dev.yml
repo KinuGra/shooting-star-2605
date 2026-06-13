@@ -1,4 +1,20 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=shootingstar
+      - POSTGRES_USER=shootingstar
+      - POSTGRES_PASSWORD=shootingstar
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shootingstar -d shootingstar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
@@ -11,6 +27,13 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/shootingstar
+      - SPRING_DATASOURCE_USERNAME=shootingstar
+      - SPRING_DATASOURCE_PASSWORD=shootingstar
+      - JWT_SECRET=979ac53fab6b5b20b6d77fd8116c897129700b7565ebdfc01395424553cc3acb
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -28,3 +51,4 @@ services:
 volumes:
   gradle-cache:
   frontend-node-modules:
+  postgres-data:

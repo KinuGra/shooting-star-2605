@@ -4,10 +4,443 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import * as zod from 'zod';
+import * as zod from "zod";
+
+/**
+ * @summary テストケースを更新する
+ */
+export const UpdateTestCaseParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const UpdateTestCaseBody = zod.object({
+  input: zod.string().optional(),
+  expectedOutput: zod.string().optional(),
+  score: zod.number().optional(),
+  orderIndex: zod.number().optional(),
+});
+
+export const UpdateTestCaseResponse = zod.unknown();
+
+/**
+ * @summary テストケースを削除する
+ */
+export const DeleteTestCaseParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const DeleteTestCaseResponse = zod.void();
+
+/**
+ * @summary スコア更新
+ */
+export const UpdateScoreParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const UpdateScoreBody = zod.object({
+  score: zod.number(),
+});
+
+export const UpdateScoreResponse = zod.unknown();
+
+/**
+ * @summary フィードバック更新
+ */
+export const UpdateFeedbackParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const UpdateFeedbackBody = zod.object({
+  startLine: zod.number().optional(),
+  endLine: zod.number().optional(),
+  body: zod.string(),
+});
+
+export const UpdateFeedbackResponse = zod.unknown();
+
+/**
+ * @summary フィードバック削除
+ */
+export const DeleteFeedbackParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const DeleteFeedbackResponse = zod.void();
+
+/**
+ * @summary 授業詳細取得
+ */
+export const GetCourseParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const GetCourseResponse = zod.unknown();
+
+/**
+ * @summary 授業更新
+ */
+export const UpdateCourseParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const UpdateCourseBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+});
+
+export const UpdateCourseResponse = zod.unknown();
+
+/**
+ * @summary 受講生ロール変更
+ */
+export const UpdateEnrollmentRoleParams = zod.object({
+  id: zod.uuid(),
+  userId: zod.uuid(),
+});
+
+export const UpdateEnrollmentRoleBody = zod.object({
+  role: zod.enum(["TEACHER", "TA", "STUDENT"]),
+});
+
+export const UpdateEnrollmentRoleResponse = zod.unknown();
+
+/**
+ * @summary 課題を取得する
+ */
+export const GetAssignmentParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const GetAssignmentResponse = zod.unknown();
+
+/**
+ * @summary 課題を更新する
+ */
+export const UpdateAssignmentParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const UpdateAssignmentBody = zod.object({
+  title: zod.string().optional(),
+  description: zod.string().optional(),
+  submissionType: zod.enum(["CODE", "FILE", "REPORT"]).optional(),
+  isPublished: zod.boolean().optional(),
+  publishAt: zod.iso.datetime({ offset: true }).optional(),
+  deadlineAt: zod.iso.datetime({ offset: true }).optional(),
+  maxScore: zod.number().optional(),
+  languages: zod.array(zod.string()).optional(),
+});
+
+export const UpdateAssignmentResponse = zod.unknown();
+
+/**
+ * @summary 課題の公開状態を変更する
+ */
+export const PublishAssignmentParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const PublishAssignmentBody = zod.object({
+  isPublished: zod.boolean(),
+  publishAt: zod.iso.datetime({ offset: true }).optional(),
+});
+
+export const PublishAssignmentResponse = zod.unknown();
+
+/**
+ * @summary 教師アカウント作成
+ */
+export const CreateTeacherBody = zod.object({
+  email: zod.string(),
+  name: zod.string(),
+  password: zod.string().optional(),
+});
+
+export const CreateTeacherResponse = zod.void();
+
+/**
+ * @summary フィードバック一覧取得
+ */
+export const GetFeedbackParams = zod.object({
+  submissionId: zod.uuid(),
+});
+
+export const GetFeedbackResponse = zod.unknown();
+
+/**
+ * @summary フィードバック追加
+ */
+export const AddFeedbackParams = zod.object({
+  submissionId: zod.uuid(),
+});
+
+export const AddFeedbackBody = zod.object({
+  startLine: zod.number().optional(),
+  endLine: zod.number().optional(),
+  body: zod.string(),
+});
+
+export const AddFeedbackResponse = zod.void();
+
+/**
+ * @summary 授業一覧取得
+ */
+export const GetMyCoursesResponse = zod.unknown();
+
+/**
+ * @summary 授業作成
+ */
+export const CreateCourseBody = zod.object({
+  name: zod.string(),
+  description: zod.string().optional(),
+});
+
+export const CreateCourseResponse = zod.void();
+
+/**
+ * @summary 招待コード再発行
+ */
+export const RegenerateInviteCodeParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const RegenerateInviteCodeResponse = zod.unknown();
+
+/**
+ * @summary コースの課題一覧を取得する
+ */
+export const GetAssignmentsParams = zod.object({
+  courseId: zod.uuid(),
+});
+
+export const GetAssignmentsResponse = zod.unknown();
+
+/**
+ * @summary 課題を作成する
+ */
+export const CreateAssignmentParams = zod.object({
+  courseId: zod.uuid(),
+});
+
+export const CreateAssignmentBody = zod.object({
+  title: zod.string(),
+  description: zod.string().optional(),
+  submissionType: zod.enum(["CODE", "FILE", "REPORT"]),
+  isPublished: zod.boolean().optional(),
+  publishAt: zod.iso.datetime({ offset: true }).optional(),
+  deadlineAt: zod.iso.datetime({ offset: true }),
+  maxScore: zod.number().optional(),
+  languages: zod.array(zod.string()).optional(),
+});
+
+export const CreateAssignmentResponse = zod.void();
+
+/**
+ * @summary 授業参加（招待コード）
+ */
+export const JoinCourseBody = zod.object({
+  inviteCode: zod.string(),
+});
+
+export const JoinCourseResponse = zod.void();
+
+/**
+ * @summary 学生登録
+ */
+export const registerBodyPasswordMin = 8;
+export const registerBodyPasswordMax = 2147483647;
+
+export const RegisterBody = zod.object({
+  email: zod.string(),
+  name: zod.string(),
+  password: zod
+    .string()
+    .min(registerBodyPasswordMin)
+    .max(registerBodyPasswordMax),
+});
+
+export const RegisterResponse = zod.void();
+
+/**
+ * @summary ログアウト
+ */
+export const LogoutResponse = zod.unknown();
+
+/**
+ * @summary ログイン
+ */
+export const LoginBody = zod.object({
+  email: zod.string(),
+  password: zod.string(),
+});
+
+export const LoginResponse = zod.unknown();
+
+/**
+ * @summary TOTPログイン
+ */
+export const LoginWithTotpBody = zod.object({
+  tempToken: zod.string(),
+  totpCode: zod.string(),
+});
+
+export const LoginWithTotpResponse = zod.unknown();
+
+/**
+ * @summary TOTP設定開始
+ */
+export const SetupTotpResponse = zod.unknown();
+
+/**
+ * @summary TOTP有効化
+ */
+export const EnableTotpBody = zod.object({
+  totpCode: zod.string(),
+});
+
+export const EnableTotpResponse = zod.unknown();
+
+/**
+ * @summary TOTP無効化
+ */
+export const DisableTotpBody = zod.object({
+  totpCode: zod.string(),
+});
+
+export const DisableTotpResponse = zod.unknown();
+
+/**
+ * @summary バックアップコード再生成
+ */
+export const RegenerateBackupCodesResponse = zod.unknown();
+
+/**
+ * @summary テストケース一覧を取得する
+ */
+export const GetTestCasesParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const GetTestCasesResponse = zod.unknown();
+
+/**
+ * @summary テストケースを作成する
+ */
+export const CreateTestCaseParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const CreateTestCaseBody = zod.object({
+  input: zod.string(),
+  expectedOutput: zod.string(),
+  score: zod.number(),
+  orderIndex: zod.number().optional(),
+});
+
+export const CreateTestCaseResponse = zod.void();
+
+/**
+ * @summary 提出一覧取得
+ */
+export const GetSubmissionsParams = zod.object({
+  assignmentId: zod.uuid(),
+});
+
+export const GetSubmissionsResponse = zod.unknown();
+
+/**
+ * @summary 課題提出
+ */
+export const SubmitParams = zod.object({
+  assignmentId: zod.uuid(),
+});
+
+export const SubmitBody = zod.object({
+  language: zod.string().optional(),
+  codeContent: zod.string().optional(),
+  fileUrl: zod.string().optional(),
+  reportContent: zod.string().optional(),
+});
+
+export const SubmitResponse = zod.void();
+
+/**
+ * @summary 提出物を返却
+ */
+export const ReturnSubmissionsParams = zod.object({
+  assignmentId: zod.uuid(),
+});
+
+export const ReturnSubmissionsResponse = zod.unknown();
+
+/**
+ * @summary ユーザー一覧取得
+ */
+export const GetAllUsersResponse = zod.unknown();
+
+/**
+ * @summary ユーザー詳細取得
+ */
+export const GetUserByIdParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const GetUserByIdResponse = zod.unknown();
+
+/**
+ * @summary 採点結果取得
+ */
+export const GetJudgeResultsParams = zod.object({
+  submissionId: zod.uuid(),
+});
+
+export const GetJudgeResultsResponse = zod.unknown();
+
+/**
+ * @summary 提出詳細取得
+ */
+export const GetSubmissionParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const GetSubmissionResponse = zod.unknown();
 
 /**
  * サーバーの稼働状態を確認する
  * @summary ヘルスチェック
  */
-export const HealthResponse = zod.unknown()
+export const HealthResponse = zod.unknown();
+
+/**
+ * @summary 受講生一覧取得
+ */
+export const GetEnrollmentsParams = zod.object({
+  id: zod.uuid(),
+});
+
+export const GetEnrollmentsResponse = zod.unknown();
+
+/**
+ * @summary 授業成績一覧取得
+ */
+export const GetCourseGradesParams = zod.object({
+  courseId: zod.uuid(),
+});
+
+export const GetCourseGradesResponse = zod.unknown();
+
+/**
+ * @summary 現在のユーザー情報取得
+ */
+export const MeResponse = zod.unknown();
+
+/**
+ * @summary 受講生削除
+ */
+export const RemoveEnrollmentParams = zod.object({
+  id: zod.uuid(),
+  userId: zod.uuid(),
+});
+
+export const RemoveEnrollmentResponse = zod.void();
