@@ -14,8 +14,7 @@ WORKDIR /app
 COPY frontend/package.json frontend/bun.lock ./
 RUN bun install --frozen-lockfile
 COPY frontend/ .
-ARG NEXT_PUBLIC_API_URL=http://localhost:8080
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# API URL is determined dynamically at runtime
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN bun run build
 

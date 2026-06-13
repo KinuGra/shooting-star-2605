@@ -1,5 +1,7 @@
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080';
+  typeof window !== 'undefined'
+    ? `${window.location.protocol}//${window.location.hostname}:8080`
+    : 'http://localhost:8080';
 
 export const customFetch = async <T>(
   url: string,
@@ -9,5 +11,10 @@ export const customFetch = async <T>(
   if (!response.ok) {
     throw new Error(`${response.status} ${response.statusText}`);
   }
-  return response.json() as Promise<T>;
+  const data = await response.json();
+  return {
+    data,
+    status: response.status,
+    headers: response.headers,
+  } as T;
 };
