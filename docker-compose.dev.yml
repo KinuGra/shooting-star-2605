@@ -1,0 +1,16 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+      target: dev
+    volumes:
+      - ./backend:/app          # Mount source for hot reload
+      - gradle-cache:/root/.gradle  # Persist dependency cache
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+volumes:
+  gradle-cache:
