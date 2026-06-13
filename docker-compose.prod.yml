@@ -15,10 +15,6 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
       target: prod
-      args:
-        # NEXT_PUBLIC_API_URL is baked in at build time.
-        # Override via: NEXT_PUBLIC_API_URL=https://api.example.com docker compose -f docker-compose.prod.yml up
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
     ports:
       - "3000:3000"
     restart: unless-stopped
