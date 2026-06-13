@@ -3,11 +3,30 @@
 import Link from "next/link";
 import { useState, use } from "react";
 import { JudgeBadge } from "@/components/Badge";
+import { useGetAssignment } from "@/api/generated/assignments/assignments";
+import { useGetCourse } from "@/api/generated/courses/courses";
 import {
-  MOCK_ASSIGNMENTS,
-  MOCK_CLASSES,
-  MOCK_SUBMISSIONS,
-} from "@/lib/mock-data";
+  useGetFeedback,
+  useAddFeedback,
+} from "@/api/generated/feedback/feedback";
+import {
+  useGetSubmission,
+  useUpdateScore,
+} from "@/api/generated/submissions/submissions";
+import type { JudgeResultResponse } from "@/api/model";
+import type { JudgeStatus } from "@/lib/types";
+
+const STATUS_PRIORITY: JudgeStatus[] = ["WA", "RE", "CE", "TLE", "MLE", "AC"];
+
+function overallStatus(
+  results: JudgeResultResponse[] | undefined,
+): JudgeStatus {
+  if (!results || results.length === 0) return "pending";
+  for (const s of STATUS_PRIORITY) {
+    if (results.some((r) => r.status === s)) return s;
+  }
+  return "AC";
+}
 
 interface Props {
   params: Promise<{
@@ -19,16 +38,29 @@ interface Props {
 
 export default function TeacherSubmissionDetailPage({ params }: Props) {
   const { classId, assignmentId, submissionId } = use(params);
-  const sub = MOCK_SUBMISSIONS.find((s) => s.id === submissionId);
-  const assignment = MOCK_ASSIGNMENTS.find((a) => a.id === assignmentId);
-  const cls = MOCK_CLASSES.find((c) => c.id === classId);
 
-  const [comment, setComment] = useState(sub?.teacherComment ?? "");
-  const [overrideScore, setOverrideScore] = useState(sub?.score ?? 0);
+  const { data: subData, isLoading: sLoading } = useGetSubmission(submissionId);
+  const { data: assignmentData, isLoading: aLoading } =
+    useGetAssignment(assignmentId);
+  const { data: courseData, isLoading: cLoading } = useGetCourse(classId);
+  const { data: feedbackData, mutate: mutateFeedback } =
+    useGetFeedback(submissionId);
+
+  const { trigger: triggerScore } = useUpdateScore(submissionId);
+  const { trigger: triggerFeedback } = useAddFeedback(submissionId);
+
+  const sub = subData?.data;
+  const assignment = assignmentData?.data;
+  const course = courseData?.data;
+
+  const [comment, setComment] = useState("");
+  const [overrideScore, setOverrideScore] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  if (!sub || !assignment || !cls)
+  const currentScore = overrideScore ?? sub?.score ?? 0;
+
+  if (sLoading || aLoading || cLoading) {
     return (
       <div
         style={{
@@ -38,24 +70,60 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
           minHeight: "60vh",
         }}
       >
-        <p style={{ color: "var(--color-text-muted)" }}>提出が見つかりません</p>
+        <p style={{ color: "var(--color-text-muted)" }}>読み込み中...</p>
       </div>
     );
+  }
 
-  const submittedAt = new Intl.DateTimeFormat("ja-JP", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(sub.submittedAt));
+  if (!sub || !assignment || !course) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <p style={{ color: "var(--color-danger)" }}>
+          データの読み込みに失敗しました
+        </p>
+      </div>
+    );
+  }
+
+  const submittedAt = sub.submittedAt
+    ? new Intl.DateTimeFormat("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(new Date(sub.submittedAt))
+    : "—";
+
+  const judgeResults = sub.judgeResults ?? [];
+  const feedbacks =
+    (feedbackData?.data as
+      | { id: string; body: string; authorName?: string; createdAt?: string }[]
+      | undefined) ?? [];
 
   async function handleSave() {
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 700));
-    setSaved(true);
-    setSaving(false);
-    setTimeout(() => setSaved(false), 3000);
+    try {
+      if (overrideScore !== null) {
+        await triggerScore({ score: overrideScore });
+      }
+      if (comment.trim()) {
+        await triggerFeedback({ body: comment.trim() });
+        await mutateFeedback();
+        setComment("");
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -89,7 +157,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
             textDecoration: "none",
           }}
         >
-          {cls.name}
+          {course.name}
         </Link>
         <span>›</span>
         <Link
@@ -103,7 +171,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
         </Link>
         <span>›</span>
         <span style={{ color: "var(--color-text-primary)" }}>
-          {sub.studentName}
+          {sub.userName ?? "—"}
         </span>
       </div>
 
@@ -137,7 +205,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
               color: "var(--color-primary)",
             }}
           >
-            {sub.studentName.charAt(0)}
+            {(sub.userName ?? "?").charAt(0)}
           </div>
           <div>
             <p
@@ -148,7 +216,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
                 marginBottom: 2,
               }}
             >
-              {sub.studentName}
+              {sub.userName ?? "—"}
             </p>
             <p
               style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}
@@ -158,7 +226,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <JudgeBadge status={sub.status} size="lg" />
+          <JudgeBadge status={overallStatus(judgeResults)} size="lg" />
           <span
             style={{
               fontSize: "1.5rem",
@@ -167,7 +235,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
               letterSpacing: "-0.03em",
             }}
           >
-            {sub.score}
+            {sub.score ?? "—"}
             <span
               style={{
                 fontSize: "0.875rem",
@@ -175,79 +243,149 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
                 color: "var(--color-text-muted)",
               }}
             >
-              /{assignment.maxScore}
+              /{assignment.maxScore ?? "—"}
             </span>
           </span>
         </div>
       </div>
 
       {/* Test results */}
-      <div
-        style={{
-          background: "var(--color-surface)",
-          border: "1px solid var(--color-border)",
-          borderRadius: 12,
-          overflow: "hidden",
-          marginBottom: 16,
-        }}
-      >
+      {judgeResults.length > 0 && (
         <div
           style={{
-            padding: "12px 20px",
-            borderBottom: "1px solid var(--color-border)",
-            background: "var(--color-bg)",
+            background: "var(--color-surface)",
+            border: "1px solid var(--color-border)",
+            borderRadius: 12,
+            overflow: "hidden",
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              padding: "12px 20px",
+              borderBottom: "1px solid var(--color-border)",
+              background: "var(--color-bg)",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                color: "var(--color-text-primary)",
+              }}
+            >
+              自動採点結果
+            </p>
+          </div>
+          {judgeResults.map((tr, idx) => (
+            <div
+              key={tr.id ?? idx}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                padding: "12px 20px",
+                borderBottom:
+                  idx < judgeResults.length - 1
+                    ? "1px solid var(--color-divider)"
+                    : "none",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  color: "var(--color-text-primary)",
+                  width: 100,
+                }}
+              >
+                テストケース {idx + 1}
+              </span>
+              <JudgeBadge status={(tr.status as JudgeStatus) ?? "pending"} />
+              <div
+                style={{
+                  marginLeft: "auto",
+                  display: "flex",
+                  gap: 20,
+                  fontSize: "0.75rem",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                {tr.executionTimeMs != null && (
+                  <span>実行時間: {tr.executionTimeMs}ms</span>
+                )}
+                {tr.memoryKb != null && (
+                  <span>メモリ: {(tr.memoryKb / 1024).toFixed(1)}MB</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Existing feedbacks */}
+      {feedbacks.length > 0 && (
+        <div
+          style={{
+            background: "var(--color-primary-subtle)",
+            border: "1px solid var(--color-primary-surface)",
+            borderRadius: 12,
+            padding: "20px 24px",
+            marginBottom: 16,
           }}
         >
           <p
             style={{
-              fontSize: "0.8125rem",
+              fontSize: "0.75rem",
               fontWeight: 600,
-              color: "var(--color-text-primary)",
+              color: "var(--color-primary)",
+              marginBottom: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
             }}
           >
-            自動採点結果
+            フィードバック履歴
           </p>
-        </div>
-        {sub.testResults.map((tr, idx) => (
-          <div
-            key={tr.testCaseId}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-              padding: "12px 20px",
-              borderBottom:
-                idx < sub.testResults.length - 1
-                  ? "1px solid var(--color-divider)"
-                  : "none",
-            }}
-          >
-            <span
-              style={{
-                fontSize: "0.875rem",
-                fontWeight: 500,
-                color: "var(--color-text-primary)",
-                width: 80,
-              }}
-            >
-              {tr.label}
-            </span>
-            <JudgeBadge status={tr.status} />
+          {feedbacks.map((fb) => (
             <div
+              key={fb.id}
               style={{
-                marginLeft: "auto",
-                display: "flex",
-                gap: 20,
-                fontSize: "0.75rem",
-                color: "var(--color-text-muted)",
+                marginBottom: 12,
+                paddingBottom: 12,
+                borderBottom: "1px solid var(--color-primary-surface)",
               }}
             >
-              <span>実行時間: {tr.executionTimeMs}ms</span>
-              <span>メモリ: {(tr.memoryKb / 1024).toFixed(1)}MB</span>
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: "var(--color-primary)",
+                  marginBottom: 4,
+                }}
+              >
+                {fb.authorName ?? "教員"}{" "}
+                {fb.createdAt
+                  ? new Intl.DateTimeFormat("ja-JP", {
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(fb.createdAt))
+                  : ""}
+              </p>
+              <p
+                style={{
+                  fontSize: "0.9375rem",
+                  color: "var(--color-text-primary)",
+                  lineHeight: 1.7,
+                  whiteSpace: "pre-wrap",
+                }}
+              >
+                {fb.body}
+              </p>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Grading panel */}
       <div
@@ -295,8 +433,8 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
               <input
                 type="number"
                 min={0}
-                max={assignment.maxScore}
-                value={overrideScore}
+                max={assignment.maxScore ?? undefined}
+                value={currentScore}
                 onChange={(e) => setOverrideScore(Number(e.target.value))}
                 style={{
                   width: 72,
@@ -321,7 +459,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
                   color: "var(--color-text-secondary)",
                 }}
               >
-                / {assignment.maxScore}点
+                / {assignment.maxScore ?? "—"}点
               </span>
             </div>
             <p
@@ -331,7 +469,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
                 color: "var(--color-text-muted)",
               }}
             >
-              自動採点: {sub.score}/{assignment.maxScore}
+              自動採点: {sub.score ?? "—"}/{assignment.maxScore ?? "—"}
             </p>
           </div>
 
@@ -345,7 +483,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
                 marginBottom: 6,
               }}
             >
-              コメント
+              コメントを追加
             </label>
             <textarea
               value={comment}
@@ -363,6 +501,7 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
                 outline: "none",
                 resize: "vertical",
                 lineHeight: 1.6,
+                boxSizing: "border-box",
               }}
               onFocus={(e) => {
                 e.currentTarget.style.borderColor = "var(--color-primary)";
@@ -408,72 +547,74 @@ export default function TeacherSubmissionDetailPage({ params }: Props) {
       </div>
 
       {/* Code view */}
-      <div
-        style={{
-          background: "var(--color-surface)",
-          border: "1px solid var(--color-border)",
-          borderRadius: 12,
-          overflow: "hidden",
-          marginBottom: 24,
-        }}
-      >
+      {sub.codeContent && (
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 20px",
-            borderBottom: "1px solid var(--color-border)",
-            background: "var(--color-bg)",
+            background: "var(--color-surface)",
+            border: "1px solid var(--color-border)",
+            borderRadius: 12,
+            overflow: "hidden",
+            marginBottom: 24,
           }}
         >
-          <p
+          <div
             style={{
-              fontSize: "0.8125rem",
-              fontWeight: 600,
-              color: "var(--color-text-primary)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "12px 20px",
+              borderBottom: "1px solid var(--color-border)",
+              background: "var(--color-bg)",
             }}
           >
-            提出コード
-          </p>
-          <span
-            style={{
-              fontFamily: "var(--font-geist-mono, monospace)",
-              fontSize: "0.6875rem",
-              background: "var(--color-surface)",
-              border: "1px solid var(--color-border)",
-              borderRadius: 4,
-              padding: "2px 8px",
-              color: "var(--color-text-secondary)",
-            }}
-          >
-            {sub.language}
-          </span>
+            <p
+              style={{
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                color: "var(--color-text-primary)",
+              }}
+            >
+              提出コード
+            </p>
+            <span
+              style={{
+                fontFamily: "var(--font-geist-mono, monospace)",
+                fontSize: "0.6875rem",
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+                borderRadius: 4,
+                padding: "2px 8px",
+                color: "var(--color-text-secondary)",
+              }}
+            >
+              {sub.language ?? "—"}
+            </span>
+          </div>
+          <div style={{ background: "#1e1e1e", overflowX: "auto" }}>
+            <pre
+              className="code-editor"
+              style={{ margin: 0, padding: "20px 24px", color: "#d4d4d4" }}
+            >
+              {sub.codeContent.split("\n").map((line, i) => (
+                <div key={i} style={{ display: "flex", gap: 20 }}>
+                  <span
+                    style={{
+                      minWidth: 28,
+                      textAlign: "right",
+                      color: "#555",
+                      userSelect: "none",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span>{line}</span>
+                </div>
+              ))}
+            </pre>
+          </div>
         </div>
-        <div style={{ background: "#1e1e1e", overflowX: "auto" }}>
-          <pre
-            className="code-editor"
-            style={{ margin: 0, padding: "20px 24px", color: "#d4d4d4" }}
-          >
-            {sub.code.split("\n").map((line, i) => (
-              <div key={i} style={{ display: "flex", gap: 20 }}>
-                <span
-                  style={{
-                    minWidth: 28,
-                    textAlign: "right",
-                    color: "#555",
-                    userSelect: "none",
-                    flexShrink: 0,
-                  }}
-                >
-                  {i + 1}
-                </span>
-                <span>{line}</span>
-              </div>
-            ))}
-          </pre>
-        </div>
-      </div>
+      )}
 
       <Link
         href={`/teacher/classes/${classId}/assignments/${assignmentId}/submissions`}
