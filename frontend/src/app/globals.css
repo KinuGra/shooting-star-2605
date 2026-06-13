@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: #f8f9fa;
+  --color-surface: #ffffff;
+  --color-border: #e8eaed;
+  --color-divider: #f1f3f4;
+
+  --color-text-primary: #202124;
+  --color-text-secondary: #5f6368;
+  --color-text-muted: #9aa0a6;
+
+  --color-primary: #0b57d0;
+  --color-primary-hover: #0842a0;
+  --color-primary-surface: #d3e3fd;
+  --color-primary-subtle: #eef2fe;
+
+  --color-success: #137333;
+  --color-success-surface: #e6f4ea;
+  --color-warning: #b45309;
+  --color-warning-surface: #fef3c7;
+  --color-danger: #c5221f;
+  --color-danger-surface: #fce8e6;
+  --color-neutral: #5f6368;
+  --color-neutral-surface: #f1f3f4;
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans, "Google Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hover utilities for server components */
+.row-link {
+  transition: background 0.1s;
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.row-link:hover { background: var(--color-bg) !important; }
+
+.card-link {
+  text-decoration: none;
+  transition: background 0.1s;
+}
+.card-link:hover { background: var(--color-bg) !important; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9aa0a6; }
+
+.code-editor {
+  font-family: var(--font-geist-mono, "Roboto Mono", "SF Mono", "Fira Code", monospace);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  tab-size: 4;
 }
