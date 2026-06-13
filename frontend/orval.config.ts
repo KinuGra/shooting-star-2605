@@ -1,31 +1,31 @@
-import { defineConfig } from "orval";
+import { defineConfig } from 'orval';
 
 export default defineConfig({
   api: {
     input: {
-      target: "http://localhost:8080/api-docs",
+      target: 'http://localhost:8080/api-docs',
     },
     output: {
-      mode: "tags-split",
-      target: "src/api/generated",
-      schemas: "src/api/model",
-      client: "swr",
-      httpClient: "fetch",
+      mode: 'tags-split',
+      target: 'src/api/generated',
+      schemas: 'src/api/model',
+      client: 'swr',
+      httpClient: 'fetch',
       override: {
         mutator: {
-          path: "src/api/fetcher.ts",
-          name: "customFetch",
+          path: 'src/api/fetcher.ts',
+          name: 'customFetch',
         },
       },
     },
   },
   zod: {
     input: {
-      target: "http://localhost:8080/api-docs",
+      target: 'http://localhost:8080/api-docs',
     },
     output: {
-      client: "zod",
-      target: "src/api/zod.generated.ts",
+      client: 'zod',
+      target: 'src/api/zod.generated.ts',
     },
   },
 });

@@ -1,230 +1,48 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
-import { use } from "react";
 import { JudgeBadge } from "@/components/Badge";
-import { useGetAssignment } from "@/api/generated/assignments/assignments";
-import { useGetCourse } from "@/api/generated/courses/courses";
-import {
-  useGetSubmissions,
-  useReturnSubmissions,
-} from "@/api/generated/submissions/submissions";
-import type { JudgeResultResponse, SubmissionResponse } from "@/api/model";
-import type { JudgeStatus } from "@/lib/types";
+import { MOCK_ASSIGNMENTS, MOCK_CLASSES, getSubmissionsForAssignment } from "@/lib/mock-data";
 
-const STATUS_PRIORITY: JudgeStatus[] = ["WA", "RE", "CE", "TLE", "MLE", "AC"];
+export const metadata: Metadata = { title: "提出物一覧" };
 
-function overallStatus(
-  results: JudgeResultResponse[] | undefined,
-): JudgeStatus {
-  if (!results || results.length === 0) return "pending";
-  for (const s of STATUS_PRIORITY) {
-    if (results.some((r) => r.status === s)) return s;
-  }
-  return "AC";
-}
+interface Props { params: Promise<{ classId: string; assignmentId: string }> }
 
-interface Props {
-  params: Promise<{ classId: string; assignmentId: string }>;
-}
+export default async function SubmissionsListPage({ params }: Props) {
+  const { classId, assignmentId } = await params;
+  const assignment = MOCK_ASSIGNMENTS.find((a) => a.id === assignmentId);
+  const cls = MOCK_CLASSES.find((c) => c.id === classId);
+  const submissions = getSubmissionsForAssignment(assignmentId)
+    .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
 
-export default function SubmissionsListPage({ params }: Props) {
-  const { classId, assignmentId } = use(params);
-
-  const {
-    data: assignmentData,
-    isLoading: aLoading,
-    error: aError,
-  } = useGetAssignment(assignmentId);
-  const {
-    data: courseData,
-    isLoading: cLoading,
-    error: cError,
-  } = useGetCourse(classId);
-  const {
-    data: subsData,
-    isLoading: sLoading,
-    error: sError,
-    mutate: mutateSubmissions,
-  } = useGetSubmissions(assignmentId);
-  const { trigger: triggerReturn, isMutating: isReturning } =
-    useReturnSubmissions(assignmentId);
-
-  if (aLoading || cLoading || sLoading) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "60vh",
-        }}
-      >
-        <p style={{ color: "var(--color-text-muted)" }}>読み込み中...</p>
-      </div>
-    );
-  }
-
-  if (
-    aError ||
-    cError ||
-    sError ||
-    !assignmentData?.data ||
-    !courseData?.data
-  ) {
-    return (
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "60vh",
-        }}
-      >
-        <p style={{ color: "var(--color-danger)" }}>
-          データの読み込みに失敗しました
-        </p>
-      </div>
-    );
-  }
-
-  const assignment = assignmentData.data;
-  const course = courseData.data;
-  const submissions: SubmissionResponse[] = (
-    (subsData?.data as SubmissionResponse[] | undefined) ?? []
-  ).sort(
-    (a, b) =>
-      new Date(b.submittedAt ?? "").getTime() -
-      new Date(a.submittedAt ?? "").getTime(),
+  if (!assignment || !cls) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+      <p style={{ color: "var(--color-text-muted)" }}>課題が見つかりません</p>
+    </div>
   );
 
-  const unreturnedCount = submissions.filter((s) => !s.returned).length;
-
-  async function handleReturn() {
-    await triggerReturn();
-    mutateSubmissions();
-  }
-
-  const acCount = submissions.filter(
-    (s) => overallStatus(s.judgeResults) === "AC",
-  ).length;
-  const avgScore =
-    submissions.length > 0
-      ? Math.round(
-          submissions.reduce((acc, s) => acc + (s.score ?? 0), 0) /
-            submissions.length,
-        )
-      : 0;
-  const acRate =
-    submissions.length > 0
-      ? Math.round((acCount / submissions.length) * 100)
-      : 0;
+  const acCount = submissions.filter((s) => s.status === "AC").length;
+  const avgScore = submissions.length > 0
+    ? Math.round(submissions.reduce((s, sub) => s + sub.score, 0) / submissions.length)
+    : 0;
+  const acRate = submissions.length > 0 ? Math.round((acCount / submissions.length) * 100) : 0;
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "40px 24px" }}>
       {/* Breadcrumb */}
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 28,
-          fontSize: "0.8125rem",
-          color: "var(--color-text-muted)",
-        }}
-      >
-        <Link
-          href="/teacher"
-          style={{
-            color: "var(--color-text-secondary)",
-            textDecoration: "none",
-          }}
-        >
-          ダッシュボード
-        </Link>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginBottom: 28, fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
+        <Link href="/teacher" style={{ color: "var(--color-text-secondary)", textDecoration: "none" }}>ダッシュボード</Link>
         <span>›</span>
-        <Link
-          href={`/teacher/classes/${classId}`}
-          style={{
-            color: "var(--color-text-secondary)",
-            textDecoration: "none",
-          }}
-        >
-          {course.name}
-        </Link>
+        <Link href={`/teacher/classes/${classId}`} style={{ color: "var(--color-text-secondary)", textDecoration: "none" }}>{cls.name}</Link>
         <span>›</span>
-        <span style={{ color: "var(--color-text-primary)" }}>
-          {assignment.title}
-        </span>
+        <span style={{ color: "var(--color-text-primary)" }}>{assignment.title}</span>
       </div>
 
       {/* Header */}
-      <div
-        style={{
-          marginBottom: 32,
-          display: "flex",
-          alignItems: "flex-start",
-          justifyContent: "space-between",
-          gap: 16,
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h1
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: 600,
-              color: "var(--color-text-primary)",
-              letterSpacing: "-0.02em",
-              marginBottom: 4,
-            }}
-          >
-            {assignment.title}
-          </h1>
-          <p
-            style={{
-              fontSize: "0.875rem",
-              color: "var(--color-text-secondary)",
-            }}
-          >
-            {course.name}
-          </p>
-        </div>
-        {unreturnedCount > 0 && (
-          <button
-            type="button"
-            onClick={handleReturn}
-            disabled={isReturning}
-            style={{
-              padding: "8px 20px",
-              background: isReturning ? "#b0c8ef" : "var(--color-primary)",
-              color: "#fff",
-              border: "none",
-              borderRadius: 8,
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              cursor: isReturning ? "not-allowed" : "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {isReturning
-              ? "返却中..."
-              : `一括返却（${unreturnedCount}件）`}
-          </button>
-        )}
-        {unreturnedCount === 0 && submissions.length > 0 && (
-          <span
-            style={{
-              fontSize: "0.8125rem",
-              color: "var(--color-primary)",
-              fontWeight: 500,
-              padding: "8px 0",
-            }}
-          >
-            ✓ 全員に返却済み
-          </span>
-        )}
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 600, color: "var(--color-text-primary)", letterSpacing: "-0.02em", marginBottom: 4 }}>
+          {assignment.title}
+        </h1>
+        <p style={{ fontSize: "0.875rem", color: "var(--color-text-secondary)" }}>{cls.name}</p>
       </div>
 
       {/* Stats */}
@@ -242,35 +60,13 @@ export default function SubmissionsListPage({ params }: Props) {
       >
         {[
           { label: "提出数", value: submissions.length },
-          { label: "AC", value: acCount, color: "var(--color-success)" },
-          { label: "AC率", value: `${acRate}%` },
-          {
-            label: "平均点",
-            value: `${avgScore}/${assignment.maxScore ?? "—"}`,
-          },
+          { label: "AC",    value: acCount,  color: "var(--color-success)" },
+          { label: "AC率",  value: `${acRate}%` },
+          { label: "平均点", value: `${avgScore}/${assignment.maxScore}` },
         ].map((s) => (
-          <div
-            key={s.label}
-            style={{ background: "var(--color-surface)", padding: "16px 20px" }}
-          >
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: "var(--color-text-muted)",
-                fontWeight: 500,
-                marginBottom: 4,
-              }}
-            >
-              {s.label}
-            </p>
-            <p
-              style={{
-                fontSize: "1.25rem",
-                fontWeight: 700,
-                letterSpacing: "-0.02em",
-                color: s.color ?? "var(--color-text-primary)",
-              }}
-            >
+          <div key={s.label} style={{ background: "var(--color-surface)", padding: "16px 20px" }}>
+            <p style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontWeight: 500, marginBottom: 4 }}>{s.label}</p>
+            <p style={{ fontSize: "1.25rem", fontWeight: 700, letterSpacing: "-0.02em", color: s.color ?? "var(--color-text-primary)" }}>
               {s.value}
             </p>
           </div>
@@ -286,6 +82,7 @@ export default function SubmissionsListPage({ params }: Props) {
           overflow: "hidden",
         }}
       >
+        {/* Header */}
         <div
           style={{
             display: "grid",
@@ -295,31 +92,15 @@ export default function SubmissionsListPage({ params }: Props) {
             background: "var(--color-bg)",
           }}
         >
-          {["学生名", "得点", "結果", "返却", "提出日時", ""].map((h) => (
-            <span
-              key={h}
-              style={{
-                fontSize: "0.6875rem",
-                fontWeight: 600,
-                color: "var(--color-text-muted)",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
+          {["学生名", "得点", "結果", "コメント", "提出日時", ""].map((h) => (
+            <span key={h} style={{ fontSize: "0.6875rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               {h}
             </span>
           ))}
         </div>
 
         {submissions.length === 0 ? (
-          <div
-            style={{
-              padding: "48px 24px",
-              textAlign: "center",
-              fontSize: "0.875rem",
-              color: "var(--color-text-muted)",
-            }}
-          >
+          <div style={{ padding: "48px 24px", textAlign: "center", fontSize: "0.875rem", color: "var(--color-text-muted)" }}>
             まだ提出がありません
           </div>
         ) : (
@@ -333,10 +114,7 @@ export default function SubmissionsListPage({ params }: Props) {
                 gridTemplateColumns: "1fr 80px 80px 80px 120px 24px",
                 alignItems: "center",
                 padding: "14px 20px",
-                borderBottom:
-                  idx < submissions.length - 1
-                    ? "1px solid var(--color-divider)"
-                    : "none",
+                borderBottom: idx < submissions.length - 1 ? "1px solid var(--color-divider)" : "none",
               }}
             >
               {/* Student */}
@@ -356,41 +134,24 @@ export default function SubmissionsListPage({ params }: Props) {
                     flexShrink: 0,
                   }}
                 >
-                  {(sub.userName ?? "?").charAt(0)}
+                  {sub.studentName.charAt(0)}
                 </div>
-                <span
-                  style={{
-                    fontSize: "0.9rem",
-                    fontWeight: 500,
-                    color: "var(--color-text-primary)",
-                  }}
-                >
-                  {sub.userName ?? "—"}
+                <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "var(--color-text-primary)" }}>
+                  {sub.studentName}
                 </span>
               </div>
 
               {/* Score */}
-              <span
-                style={{
-                  fontSize: "0.875rem",
-                  fontWeight: 600,
-                  color: "var(--color-text-primary)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {sub.score ?? "—"}
-                <span
-                  style={{ fontWeight: 400, color: "var(--color-text-muted)" }}
-                >
-                  /{assignment.maxScore ?? "—"}
-                </span>
+              <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                {sub.score}
+                <span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>/{sub.maxScore}</span>
               </span>
 
               {/* Status */}
-              <JudgeBadge status={overallStatus(sub.judgeResults)} size="sm" />
+              <JudgeBadge status={sub.status} size="sm" />
 
-              {/* Returned */}
-              {sub.returned ? (
+              {/* Comment */}
+              {sub.teacherComment ? (
                 <span
                   style={{
                     fontSize: "0.6875rem",
@@ -402,7 +163,7 @@ export default function SubmissionsListPage({ params }: Props) {
                     fontWeight: 500,
                   }}
                 >
-                  返却済
+                  確認済
                 </span>
               ) : (
                 <span
@@ -416,25 +177,13 @@ export default function SubmissionsListPage({ params }: Props) {
                     fontWeight: 500,
                   }}
                 >
-                  未返却
+                  未確認
                 </span>
               )}
 
               {/* Date */}
-              <span
-                style={{
-                  fontSize: "0.75rem",
-                  color: "var(--color-text-muted)",
-                }}
-              >
-                {sub.submittedAt
-                  ? new Intl.DateTimeFormat("ja-JP", {
-                      month: "numeric",
-                      day: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(new Date(sub.submittedAt))
-                  : "—"}
+              <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>
+                {new Intl.DateTimeFormat("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(sub.submittedAt))}
               </span>
 
               <span style={{ color: "var(--color-text-muted)" }}>›</span>

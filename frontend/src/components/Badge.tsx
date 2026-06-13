@@ -1,42 +1,14 @@
 import type { JudgeStatus } from "@/lib/types";
 
-const judgeConfig: Record<
-  JudgeStatus,
-  { label: string; bg: string; text: string; border: string }
-> = {
-  AC: {
-    label: "AC",
-    bg: "var(--color-success-surface)",
-    text: "var(--color-success)",
-    border: "#a8d5b5",
-  },
-  WA: {
-    label: "WA",
-    bg: "var(--color-danger-surface)",
-    text: "var(--color-danger)",
-    border: "#f5c6c4",
-  },
-  TLE: {
-    label: "TLE",
-    bg: "var(--color-warning-surface)",
-    text: "var(--color-warning)",
-    border: "#fcd68a",
-  },
-  CE: { label: "CE", bg: "#f3e8fd", text: "#6b21a8", border: "#d8b4fe" },
-  RE: { label: "RE", bg: "#fff7ed", text: "#9a3412", border: "#fdba74" },
-  MLE: { label: "MLE", bg: "#ecfeff", text: "#155e75", border: "#a5f3fc" },
-  pending: {
-    label: "待機中",
-    bg: "var(--color-neutral-surface)",
-    text: "var(--color-neutral)",
-    border: "var(--color-border)",
-  },
-  running: {
-    label: "採点中",
-    bg: "var(--color-primary-subtle)",
-    text: "var(--color-primary)",
-    border: "var(--color-primary-surface)",
-  },
+const judgeConfig: Record<JudgeStatus, { label: string; bg: string; text: string; border: string }> = {
+  AC:      { label: "AC",     bg: "var(--color-success-surface)",  text: "var(--color-success)",  border: "#a8d5b5" },
+  WA:      { label: "WA",     bg: "var(--color-danger-surface)",   text: "var(--color-danger)",   border: "#f5c6c4" },
+  TLE:     { label: "TLE",    bg: "var(--color-warning-surface)",  text: "var(--color-warning)",  border: "#fcd68a" },
+  CE:      { label: "CE",     bg: "#f3e8fd",                       text: "#6b21a8",               border: "#d8b4fe" },
+  RE:      { label: "RE",     bg: "#fff7ed",                       text: "#9a3412",               border: "#fdba74" },
+  MLE:     { label: "MLE",    bg: "#ecfeff",                       text: "#155e75",               border: "#a5f3fc" },
+  pending: { label: "待機中", bg: "var(--color-neutral-surface)",  text: "var(--color-neutral)",  border: "var(--color-border)" },
+  running: { label: "採点中", bg: "var(--color-primary-subtle)",   text: "var(--color-primary)",  border: "var(--color-primary-surface)" },
 };
 
 interface JudgeBadgeProps {
@@ -92,31 +64,11 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ label, variant = "default" }: StatusBadgeProps) {
   const styles: Record<string, { bg: string; text: string; border: string }> = {
-    default: {
-      bg: "var(--color-neutral-surface)",
-      text: "var(--color-neutral)",
-      border: "var(--color-border)",
-    },
-    success: {
-      bg: "var(--color-success-surface)",
-      text: "var(--color-success)",
-      border: "#a8d5b5",
-    },
-    warning: {
-      bg: "var(--color-warning-surface)",
-      text: "var(--color-warning)",
-      border: "#fcd68a",
-    },
-    danger: {
-      bg: "var(--color-danger-surface)",
-      text: "var(--color-danger)",
-      border: "#f5c6c4",
-    },
-    info: {
-      bg: "var(--color-primary-subtle)",
-      text: "var(--color-primary)",
-      border: "var(--color-primary-surface)",
-    },
+    default: { bg: "var(--color-neutral-surface)", text: "var(--color-neutral)", border: "var(--color-border)" },
+    success: { bg: "var(--color-success-surface)", text: "var(--color-success)", border: "#a8d5b5" },
+    warning: { bg: "var(--color-warning-surface)", text: "var(--color-warning)", border: "#fcd68a" },
+    danger:  { bg: "var(--color-danger-surface)",  text: "var(--color-danger)",  border: "#f5c6c4" },
+    info:    { bg: "var(--color-primary-subtle)",  text: "var(--color-primary)", border: "var(--color-primary-surface)" },
   };
   const s = styles[variant];
   return (
