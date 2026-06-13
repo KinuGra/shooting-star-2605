@@ -5,7 +5,10 @@ import { use } from "react";
 import { JudgeBadge } from "@/components/Badge";
 import { useGetAssignment } from "@/api/generated/assignments/assignments";
 import { useGetCourse } from "@/api/generated/courses/courses";
-import { useGetSubmissions } from "@/api/generated/submissions/submissions";
+import {
+  useGetSubmissions,
+  useReturnSubmissions,
+} from "@/api/generated/submissions/submissions";
 import type { JudgeResultResponse, SubmissionResponse } from "@/api/model";
 import type { JudgeStatus } from "@/lib/types";
 
@@ -42,7 +45,10 @@ export default function SubmissionsListPage({ params }: Props) {
     data: subsData,
     isLoading: sLoading,
     error: sError,
+    mutate: mutateSubmissions,
   } = useGetSubmissions(assignmentId);
+  const { trigger: triggerReturn, isMutating: isReturning } =
+    useReturnSubmissions(assignmentId);
 
   if (aLoading || cLoading || sLoading) {
     return (
@@ -91,6 +97,13 @@ export default function SubmissionsListPage({ params }: Props) {
       new Date(b.submittedAt ?? "").getTime() -
       new Date(a.submittedAt ?? "").getTime(),
   );
+
+  const unreturnedCount = submissions.filter((s) => !s.returned).length;
+
+  async function handleReturn() {
+    await triggerReturn();
+    mutateSubmissions();
+  }
 
   const acCount = submissions.filter(
     (s) => overallStatus(s.judgeResults) === "AC",
@@ -147,23 +160,71 @@ export default function SubmissionsListPage({ params }: Props) {
       </div>
 
       {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: 600,
-            color: "var(--color-text-primary)",
-            letterSpacing: "-0.02em",
-            marginBottom: 4,
-          }}
-        >
-          {assignment.title}
-        </h1>
-        <p
-          style={{ fontSize: "0.875rem", color: "var(--color-text-secondary)" }}
-        >
-          {course.name}
-        </p>
+      <div
+        style={{
+          marginBottom: 32,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: 600,
+              color: "var(--color-text-primary)",
+              letterSpacing: "-0.02em",
+              marginBottom: 4,
+            }}
+          >
+            {assignment.title}
+          </h1>
+          <p
+            style={{
+              fontSize: "0.875rem",
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            {course.name}
+          </p>
+        </div>
+        {unreturnedCount > 0 && (
+          <button
+            type="button"
+            onClick={handleReturn}
+            disabled={isReturning}
+            style={{
+              padding: "8px 20px",
+              background: isReturning ? "#b0c8ef" : "var(--color-primary)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              cursor: isReturning ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {isReturning
+              ? "返却中..."
+              : `一括返却（${unreturnedCount}件）`}
+          </button>
+        )}
+        {unreturnedCount === 0 && submissions.length > 0 && (
+          <span
+            style={{
+              fontSize: "0.8125rem",
+              color: "var(--color-primary)",
+              fontWeight: 500,
+              padding: "8px 0",
+            }}
+          >
+            ✓ 全員に返却済み
+          </span>
+        )}
       </div>
 
       {/* Stats */}
