@@ -14,7 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 backend/     # Spring Boot 3.3.5 / Java 21
 frontend/    # Next.js 16 / React 19 / TypeScript
 docker/      # Dockerfiles
-infra/       # Terraform (AWS EKS, ap-northeast-1)
+infra/       # Terraform (AWS ECS Fargate, ap-northeast-1)
 docs/        # Architecture, specs, setup guides
 ```
 
@@ -120,4 +120,4 @@ Valid prefixes: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`
 
 ## Infrastructure
 
-Terraform in `infra/` provisions AWS EKS (cluster `2606`, `ap-northeast-1`, Kubernetes 1.31) with a VPC across 2 AZs.
+Terraform in `infra/` provisions AWS ECS Fargate (`ap-northeast-1`) with a VPC (1 public subnet). Key resources: ECR repositories (backend/frontend), ECS cluster + services, ALB, CloudWatch Logs, IAM roles, security groups.
