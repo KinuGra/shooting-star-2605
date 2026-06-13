@@ -124,7 +124,7 @@ echo "Swagger:  http://${PUBLIC_IP}:8080/swagger-ui.html"
 
 ## イメージ更新デプロイ
 
-コードを変更してデプロイし直す場合。
+コードを変更してデプロイし直す場合。プロジェクトルートから実行すること。
 
 ```bash
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -134,12 +134,19 @@ aws ecr get-login-password --region $AWS_REGION \
   | docker login --username AWS --password-stdin \
     $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
 
-# 変更したイメージのみビルド & プッシュ（両方変えた場合は両方実行）
+# Backend 更新時
 docker build -f docker/backend/Dockerfile --target prod -t shooting-star-backend .
 docker tag shooting-star-backend:latest \
   $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/shooting-star-backend:latest
 docker push \
   $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/shooting-star-backend:latest
+
+# Frontend 更新時
+docker build -f docker/frontend/Dockerfile --target prod -t shooting-star-frontend .
+docker tag shooting-star-frontend:latest \
+  $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/shooting-star-frontend:latest
+docker push \
+  $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/shooting-star-frontend:latest
 
 # ECS サービスを強制更新（新イメージで再起動）
 aws ecs update-service \
@@ -175,6 +182,8 @@ PUBLIC_IP=$(aws ec2 describe-network-interfaces \
   --output text)
 
 echo "Frontend: http://${PUBLIC_IP}:3000"
+echo "Backend:  http://${PUBLIC_IP}:8080"
+echo "Swagger:  http://${PUBLIC_IP}:8080/swagger-ui.html"
 ```
 
 > **注意**: ALB がないため、タスク再起動のたびにパブリック IP が変わる。
