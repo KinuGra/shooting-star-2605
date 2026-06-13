@@ -75,7 +75,10 @@ export function LoginForm() {
   const onLogin = async (data: LoginFormData) => {
     setServerError("");
     try {
-      const result = await login({ email: data.email, password: data.password });
+      const result = await login({
+        email: data.email,
+        password: data.password,
+      });
       const body = result.data as AuthResponse & { tempToken?: string };
 
       if (body.tempToken) {

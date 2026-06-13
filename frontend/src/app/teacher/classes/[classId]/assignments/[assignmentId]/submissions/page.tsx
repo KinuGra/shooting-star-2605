@@ -1,28 +1,50 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { JudgeBadge } from "@/components/Badge";
-import {
-  MOCK_ASSIGNMENTS,
-  MOCK_CLASSES,
-  getSubmissionsForAssignment,
-} from "@/lib/mock-data";
+"use client";
 
-export const metadata: Metadata = { title: "提出物一覧" };
+import Link from "next/link";
+import { use } from "react";
+import { JudgeBadge } from "@/components/Badge";
+import { useGetAssignment } from "@/api/generated/assignments/assignments";
+import { useGetCourse } from "@/api/generated/courses/courses";
+import { useGetSubmissions } from "@/api/generated/submissions/submissions";
+import type { JudgeResultResponse, SubmissionResponse } from "@/api/model";
+import type { JudgeStatus } from "@/lib/types";
+
+const STATUS_PRIORITY: JudgeStatus[] = ["WA", "RE", "CE", "TLE", "MLE", "AC"];
+
+function overallStatus(
+  results: JudgeResultResponse[] | undefined,
+): JudgeStatus {
+  if (!results || results.length === 0) return "pending";
+  for (const s of STATUS_PRIORITY) {
+    if (results.some((r) => r.status === s)) return s;
+  }
+  return "AC";
+}
 
 interface Props {
   params: Promise<{ classId: string; assignmentId: string }>;
 }
 
-export default async function SubmissionsListPage({ params }: Props) {
-  const { classId, assignmentId } = await params;
-  const assignment = MOCK_ASSIGNMENTS.find((a) => a.id === assignmentId);
-  const cls = MOCK_CLASSES.find((c) => c.id === classId);
-  const submissions = getSubmissionsForAssignment(assignmentId).sort(
-    (a, b) =>
-      new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
-  );
+export default function SubmissionsListPage({ params }: Props) {
+  const { classId, assignmentId } = use(params);
 
-  if (!assignment || !cls)
+  const {
+    data: assignmentData,
+    isLoading: aLoading,
+    error: aError,
+  } = useGetAssignment(assignmentId);
+  const {
+    data: courseData,
+    isLoading: cLoading,
+    error: cError,
+  } = useGetCourse(classId);
+  const {
+    data: subsData,
+    isLoading: sLoading,
+    error: sError,
+  } = useGetSubmissions(assignmentId);
+
+  if (aLoading || cLoading || sLoading) {
     return (
       <div
         style={{
@@ -32,15 +54,52 @@ export default async function SubmissionsListPage({ params }: Props) {
           minHeight: "60vh",
         }}
       >
-        <p style={{ color: "var(--color-text-muted)" }}>課題が見つかりません</p>
+        <p style={{ color: "var(--color-text-muted)" }}>読み込み中...</p>
       </div>
     );
+  }
 
-  const acCount = submissions.filter((s) => s.status === "AC").length;
+  if (
+    aError ||
+    cError ||
+    sError ||
+    !assignmentData?.data ||
+    !courseData?.data
+  ) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+        }}
+      >
+        <p style={{ color: "var(--color-danger)" }}>
+          データの読み込みに失敗しました
+        </p>
+      </div>
+    );
+  }
+
+  const assignment = assignmentData.data;
+  const course = courseData.data;
+  const submissions: SubmissionResponse[] = (
+    (subsData?.data as SubmissionResponse[] | undefined) ?? []
+  ).sort(
+    (a, b) =>
+      new Date(b.submittedAt ?? "").getTime() -
+      new Date(a.submittedAt ?? "").getTime(),
+  );
+
+  const acCount = submissions.filter(
+    (s) => overallStatus(s.judgeResults) === "AC",
+  ).length;
   const avgScore =
     submissions.length > 0
       ? Math.round(
-          submissions.reduce((s, sub) => s + sub.score, 0) / submissions.length,
+          submissions.reduce((acc, s) => acc + (s.score ?? 0), 0) /
+            submissions.length,
         )
       : 0;
   const acRate =
@@ -79,7 +138,7 @@ export default async function SubmissionsListPage({ params }: Props) {
             textDecoration: "none",
           }}
         >
-          {cls.name}
+          {course.name}
         </Link>
         <span>›</span>
         <span style={{ color: "var(--color-text-primary)" }}>
@@ -103,7 +162,7 @@ export default async function SubmissionsListPage({ params }: Props) {
         <p
           style={{ fontSize: "0.875rem", color: "var(--color-text-secondary)" }}
         >
-          {cls.name}
+          {course.name}
         </p>
       </div>
 
@@ -124,7 +183,10 @@ export default async function SubmissionsListPage({ params }: Props) {
           { label: "提出数", value: submissions.length },
           { label: "AC", value: acCount, color: "var(--color-success)" },
           { label: "AC率", value: `${acRate}%` },
-          { label: "平均点", value: `${avgScore}/${assignment.maxScore}` },
+          {
+            label: "平均点",
+            value: `${avgScore}/${assignment.maxScore ?? "—"}`,
+          },
         ].map((s) => (
           <div
             key={s.label}
@@ -163,7 +225,6 @@ export default async function SubmissionsListPage({ params }: Props) {
           overflow: "hidden",
         }}
       >
-        {/* Header */}
         <div
           style={{
             display: "grid",
@@ -173,7 +234,7 @@ export default async function SubmissionsListPage({ params }: Props) {
             background: "var(--color-bg)",
           }}
         >
-          {["学生名", "得点", "結果", "コメント", "提出日時", ""].map((h) => (
+          {["学生名", "得点", "結果", "返却", "提出日時", ""].map((h) => (
             <span
               key={h}
               style={{
@@ -234,7 +295,7 @@ export default async function SubmissionsListPage({ params }: Props) {
                     flexShrink: 0,
                   }}
                 >
-                  {sub.studentName.charAt(0)}
+                  {(sub.userName ?? "?").charAt(0)}
                 </div>
                 <span
                   style={{
@@ -243,7 +304,7 @@ export default async function SubmissionsListPage({ params }: Props) {
                     color: "var(--color-text-primary)",
                   }}
                 >
-                  {sub.studentName}
+                  {sub.userName ?? "—"}
                 </span>
               </div>
 
@@ -256,19 +317,19 @@ export default async function SubmissionsListPage({ params }: Props) {
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {sub.score}
+                {sub.score ?? "—"}
                 <span
                   style={{ fontWeight: 400, color: "var(--color-text-muted)" }}
                 >
-                  /{sub.maxScore}
+                  /{assignment.maxScore ?? "—"}
                 </span>
               </span>
 
               {/* Status */}
-              <JudgeBadge status={sub.status} size="sm" />
+              <JudgeBadge status={overallStatus(sub.judgeResults)} size="sm" />
 
-              {/* Comment */}
-              {sub.teacherComment ? (
+              {/* Returned */}
+              {sub.returned ? (
                 <span
                   style={{
                     fontSize: "0.6875rem",
@@ -280,7 +341,7 @@ export default async function SubmissionsListPage({ params }: Props) {
                     fontWeight: 500,
                   }}
                 >
-                  確認済
+                  返却済
                 </span>
               ) : (
                 <span
@@ -294,7 +355,7 @@ export default async function SubmissionsListPage({ params }: Props) {
                     fontWeight: 500,
                   }}
                 >
-                  未確認
+                  未返却
                 </span>
               )}
 
@@ -305,12 +366,14 @@ export default async function SubmissionsListPage({ params }: Props) {
                   color: "var(--color-text-muted)",
                 }}
               >
-                {new Intl.DateTimeFormat("ja-JP", {
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }).format(new Date(sub.submittedAt))}
+                {sub.submittedAt
+                  ? new Intl.DateTimeFormat("ja-JP", {
+                      month: "numeric",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(sub.submittedAt))
+                  : "—"}
               </span>
 
               <span style={{ color: "var(--color-text-muted)" }}>›</span>
