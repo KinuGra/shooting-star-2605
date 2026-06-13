@@ -12,5 +12,19 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
 
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      target: dev
+    volumes:
+      - ./frontend:/app                         # Mount source for hot reload
+      - frontend-node-modules:/app/node_modules # Preserve container-installed modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+
 volumes:
   gradle-cache:
+  frontend-node-modules:
