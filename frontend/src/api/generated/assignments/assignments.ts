@@ -4,17 +4,11 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import useSwr from 'swr';
-import type {
-  Arguments,
-  Key,
-  SWRConfiguration
-} from 'swr';
+import useSwr from "swr";
+import type { Arguments, Key, SWRConfiguration } from "swr";
 
-import useSWRMutation from 'swr/mutation';
-import type {
-  SWRMutationConfiguration
-} from 'swr/mutation';
+import useSWRMutation from "swr/mutation";
+import type { SWRMutationConfiguration } from "swr/mutation";
 
 import type {
   AssignmentResponse,
@@ -23,589 +17,658 @@ import type {
   PublishAssignmentRequest,
   TestCaseResponse,
   UpdateAssignmentRequest,
-  UpdateTestCaseRequest
-} from '../../model';
+  UpdateTestCaseRequest,
+} from "../../model";
 
-import { customFetch } from '../../fetcher';
+import { customFetch } from "../../fetcher";
 
-
-
-  type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export type updateTestCaseResponse200 = {
-  data: TestCaseResponse
-  status: 200
-}
+  data: TestCaseResponse;
+  status: 200;
+};
 
-export type updateTestCaseResponseSuccess = (updateTestCaseResponse200) & {
+export type updateTestCaseResponseSuccess = updateTestCaseResponse200 & {
   headers: Headers;
 };
-;
 
-export type updateTestCaseResponse = (updateTestCaseResponseSuccess)
+export type updateTestCaseResponse = updateTestCaseResponseSuccess;
 
-export const getUpdateTestCaseUrl = (id: string,) => {
-
-
-
-
-  return `/test-cases/${id}`
-}
+export const getUpdateTestCaseUrl = (id: string) => {
+  return `/test-cases/${id}`;
+};
 
 /**
  * @summary テストケースを更新する
  */
-export const updateTestCase = async (id: string,
-    updateTestCaseRequest: UpdateTestCaseRequest, options?: RequestInit): Promise<updateTestCaseResponse> => {
-
-  return customFetch<updateTestCaseResponse>(getUpdateTestCaseUrl(id),
-  {
+export const updateTestCase = async (
+  id: string,
+  updateTestCaseRequest: UpdateTestCaseRequest,
+  options?: RequestInit,
+): Promise<updateTestCaseResponse> => {
+  return customFetch<updateTestCaseResponse>(getUpdateTestCaseUrl(id), {
     ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateTestCaseRequest)
-  }
-);}
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateTestCaseRequest),
+  });
+};
 
-
-
-
-export const getUpdateTestCaseMutationFetcher = (id: string, options?: SecondParameter<typeof customFetch>) => {
+export const getUpdateTestCaseMutationFetcher = (
+  id: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
   return (_: Key, { arg }: { arg: UpdateTestCaseRequest }) => {
     return updateTestCase(id, arg, options);
-  }
-}
-export const getUpdateTestCaseMutationKey = (id: string,) => [`/test-cases/${id}`] as const;
+  };
+};
+export const getUpdateTestCaseMutationKey = (id: string) =>
+  [`/test-cases/${id}`] as const;
 
-export type UpdateTestCaseMutationResult = NonNullable<Awaited<ReturnType<typeof updateTestCase>>>
+export type UpdateTestCaseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTestCase>>
+>;
 
 /**
  * @summary テストケースを更新する
  */
 export const useUpdateTestCase = <TError = unknown>(
-  id: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateTestCase>>, TError, Key, UpdateTestCaseRequest, Awaited<ReturnType<typeof updateTestCase>>> & { swrKey?: string }, request?: SecondParameter<typeof customFetch>}
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof updateTestCase>>,
+      TError,
+      Key,
+      UpdateTestCaseRequest,
+      Awaited<ReturnType<typeof updateTestCase>>
+    > & { swrKey?: string };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
   const swrKey = swrOptions?.swrKey ?? getUpdateTestCaseMutationKey(id);
   const swrFn = getUpdateTestCaseMutationFetcher(id, requestOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type deleteTestCaseResponse204 = {
-  data: void
-  status: 204
-}
+  data: void;
+  status: 204;
+};
 
-export type deleteTestCaseResponseSuccess = (deleteTestCaseResponse204) & {
+export type deleteTestCaseResponseSuccess = deleteTestCaseResponse204 & {
   headers: Headers;
 };
-;
 
-export type deleteTestCaseResponse = (deleteTestCaseResponseSuccess)
+export type deleteTestCaseResponse = deleteTestCaseResponseSuccess;
 
-export const getDeleteTestCaseUrl = (id: string,) => {
-
-
-
-
-  return `/test-cases/${id}`
-}
+export const getDeleteTestCaseUrl = (id: string) => {
+  return `/test-cases/${id}`;
+};
 
 /**
  * @summary テストケースを削除する
  */
-export const deleteTestCase = async (id: string, options?: RequestInit): Promise<deleteTestCaseResponse> => {
-
-  return customFetch<deleteTestCaseResponse>(getDeleteTestCaseUrl(id),
-  {
+export const deleteTestCase = async (
+  id: string,
+  options?: RequestInit,
+): Promise<deleteTestCaseResponse> => {
+  return customFetch<deleteTestCaseResponse>(getDeleteTestCaseUrl(id), {
     ...options,
-    method: 'DELETE'
+    method: "DELETE",
+  });
+};
 
-
-  }
-);}
-
-
-
-
-export const getDeleteTestCaseMutationFetcher = (id: string, options?: SecondParameter<typeof customFetch>) => {
+export const getDeleteTestCaseMutationFetcher = (
+  id: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
   return (_: Key, __: { arg: Arguments }) => {
     return deleteTestCase(id, options);
-  }
-}
-export const getDeleteTestCaseMutationKey = (id: string,) => [`/test-cases/${id}`] as const;
+  };
+};
+export const getDeleteTestCaseMutationKey = (id: string) =>
+  [`/test-cases/${id}`] as const;
 
-export type DeleteTestCaseMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTestCase>>>
+export type DeleteTestCaseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteTestCase>>
+>;
 
 /**
  * @summary テストケースを削除する
  */
 export const useDeleteTestCase = <TError = unknown>(
-  id: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof deleteTestCase>>, TError, Key, Arguments, Awaited<ReturnType<typeof deleteTestCase>>> & { swrKey?: string }, request?: SecondParameter<typeof customFetch>}
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof deleteTestCase>>,
+      TError,
+      Key,
+      Arguments,
+      Awaited<ReturnType<typeof deleteTestCase>>
+    > & { swrKey?: string };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
   const swrKey = swrOptions?.swrKey ?? getDeleteTestCaseMutationKey(id);
   const swrFn = getDeleteTestCaseMutationFetcher(id, requestOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type getAssignmentResponse200 = {
-  data: AssignmentResponse
-  status: 200
-}
+  data: AssignmentResponse;
+  status: 200;
+};
 
-export type getAssignmentResponseSuccess = (getAssignmentResponse200) & {
+export type getAssignmentResponseSuccess = getAssignmentResponse200 & {
   headers: Headers;
 };
-;
 
-export type getAssignmentResponse = (getAssignmentResponseSuccess)
+export type getAssignmentResponse = getAssignmentResponseSuccess;
 
-export const getGetAssignmentUrl = (id: string,) => {
-
-
-
-
-  return `/assignments/${id}`
-}
+export const getGetAssignmentUrl = (id: string) => {
+  return `/assignments/${id}`;
+};
 
 /**
  * @summary 課題を取得する
  */
-export const getAssignment = async (id: string, options?: RequestInit): Promise<getAssignmentResponse> => {
-
-  return customFetch<getAssignmentResponse>(getGetAssignmentUrl(id),
-  {
+export const getAssignment = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getAssignmentResponse> => {
+  return customFetch<getAssignmentResponse>(getGetAssignmentUrl(id), {
     ...options,
-    method: 'GET'
+    method: "GET",
+  });
+};
 
+export const getGetAssignmentKey = (id: string) =>
+  [`/assignments/${id}`] as const;
 
-  }
-);}
-
-
-
-
-export const getGetAssignmentKey = (id: string,) => [`/assignments/${id}`] as const;
-
-export type GetAssignmentQueryResult = NonNullable<Awaited<ReturnType<typeof getAssignment>>>
+export type GetAssignmentQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAssignment>>
+>;
 
 /**
  * @summary 課題を取得する
  */
 export const useGetAssignment = <TError = unknown>(
-  id: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getAssignment>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof customFetch> }
+  id: string,
+  options?: {
+    swr?: SWRConfiguration<
+      Awaited<ReturnType<typeof getAssignment>>,
+      TError
+    > & { swrKey?: Key; enabled?: boolean };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false && id !== null && id !== undefined
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetAssignmentKey(id) : null);
-  const swrFn = () => getAssignment(id, requestOptions)
+  const isEnabled =
+    swrOptions?.enabled !== false && id !== null && id !== undefined;
+  const swrKey =
+    swrOptions?.swrKey ?? (() => (isEnabled ? getGetAssignmentKey(id) : null));
+  const swrFn = () => getAssignment(id, requestOptions);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+    swrKey,
+    swrFn,
+    swrOptions,
+  );
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type updateAssignmentResponse200 = {
-  data: AssignmentResponse
-  status: 200
-}
+  data: AssignmentResponse;
+  status: 200;
+};
 
-export type updateAssignmentResponseSuccess = (updateAssignmentResponse200) & {
+export type updateAssignmentResponseSuccess = updateAssignmentResponse200 & {
   headers: Headers;
 };
-;
 
-export type updateAssignmentResponse = (updateAssignmentResponseSuccess)
+export type updateAssignmentResponse = updateAssignmentResponseSuccess;
 
-export const getUpdateAssignmentUrl = (id: string,) => {
-
-
-
-
-  return `/assignments/${id}`
-}
+export const getUpdateAssignmentUrl = (id: string) => {
+  return `/assignments/${id}`;
+};
 
 /**
  * @summary 課題を更新する
  */
-export const updateAssignment = async (id: string,
-    updateAssignmentRequest: UpdateAssignmentRequest, options?: RequestInit): Promise<updateAssignmentResponse> => {
-
-  return customFetch<updateAssignmentResponse>(getUpdateAssignmentUrl(id),
-  {
+export const updateAssignment = async (
+  id: string,
+  updateAssignmentRequest: UpdateAssignmentRequest,
+  options?: RequestInit,
+): Promise<updateAssignmentResponse> => {
+  return customFetch<updateAssignmentResponse>(getUpdateAssignmentUrl(id), {
     ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateAssignmentRequest)
-  }
-);}
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateAssignmentRequest),
+  });
+};
 
-
-
-
-export const getUpdateAssignmentMutationFetcher = (id: string, options?: SecondParameter<typeof customFetch>) => {
+export const getUpdateAssignmentMutationFetcher = (
+  id: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
   return (_: Key, { arg }: { arg: UpdateAssignmentRequest }) => {
     return updateAssignment(id, arg, options);
-  }
-}
-export const getUpdateAssignmentMutationKey = (id: string,) => [`/assignments/${id}`] as const;
+  };
+};
+export const getUpdateAssignmentMutationKey = (id: string) =>
+  [`/assignments/${id}`] as const;
 
-export type UpdateAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof updateAssignment>>>
+export type UpdateAssignmentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAssignment>>
+>;
 
 /**
  * @summary 課題を更新する
  */
 export const useUpdateAssignment = <TError = unknown>(
-  id: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof updateAssignment>>, TError, Key, UpdateAssignmentRequest, Awaited<ReturnType<typeof updateAssignment>>> & { swrKey?: string }, request?: SecondParameter<typeof customFetch>}
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof updateAssignment>>,
+      TError,
+      Key,
+      UpdateAssignmentRequest,
+      Awaited<ReturnType<typeof updateAssignment>>
+    > & { swrKey?: string };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
   const swrKey = swrOptions?.swrKey ?? getUpdateAssignmentMutationKey(id);
   const swrFn = getUpdateAssignmentMutationFetcher(id, requestOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type publishAssignmentResponse200 = {
-  data: AssignmentResponse
-  status: 200
-}
+  data: AssignmentResponse;
+  status: 200;
+};
 
-export type publishAssignmentResponseSuccess = (publishAssignmentResponse200) & {
+export type publishAssignmentResponseSuccess = publishAssignmentResponse200 & {
   headers: Headers;
 };
-;
 
-export type publishAssignmentResponse = (publishAssignmentResponseSuccess)
+export type publishAssignmentResponse = publishAssignmentResponseSuccess;
 
-export const getPublishAssignmentUrl = (id: string,) => {
-
-
-
-
-  return `/assignments/${id}/publish`
-}
+export const getPublishAssignmentUrl = (id: string) => {
+  return `/assignments/${id}/publish`;
+};
 
 /**
  * @summary 課題の公開状態を変更する
  */
-export const publishAssignment = async (id: string,
-    publishAssignmentRequest: PublishAssignmentRequest, options?: RequestInit): Promise<publishAssignmentResponse> => {
-
-  return customFetch<publishAssignmentResponse>(getPublishAssignmentUrl(id),
-  {
+export const publishAssignment = async (
+  id: string,
+  publishAssignmentRequest: PublishAssignmentRequest,
+  options?: RequestInit,
+): Promise<publishAssignmentResponse> => {
+  return customFetch<publishAssignmentResponse>(getPublishAssignmentUrl(id), {
     ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(publishAssignmentRequest)
-  }
-);}
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(publishAssignmentRequest),
+  });
+};
 
-
-
-
-export const getPublishAssignmentMutationFetcher = (id: string, options?: SecondParameter<typeof customFetch>) => {
+export const getPublishAssignmentMutationFetcher = (
+  id: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
   return (_: Key, { arg }: { arg: PublishAssignmentRequest }) => {
     return publishAssignment(id, arg, options);
-  }
-}
-export const getPublishAssignmentMutationKey = (id: string,) => [`/assignments/${id}/publish`] as const;
+  };
+};
+export const getPublishAssignmentMutationKey = (id: string) =>
+  [`/assignments/${id}/publish`] as const;
 
-export type PublishAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof publishAssignment>>>
+export type PublishAssignmentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof publishAssignment>>
+>;
 
 /**
  * @summary 課題の公開状態を変更する
  */
 export const usePublishAssignment = <TError = unknown>(
-  id: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof publishAssignment>>, TError, Key, PublishAssignmentRequest, Awaited<ReturnType<typeof publishAssignment>>> & { swrKey?: string }, request?: SecondParameter<typeof customFetch>}
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof publishAssignment>>,
+      TError,
+      Key,
+      PublishAssignmentRequest,
+      Awaited<ReturnType<typeof publishAssignment>>
+    > & { swrKey?: string };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
   const swrKey = swrOptions?.swrKey ?? getPublishAssignmentMutationKey(id);
   const swrFn = getPublishAssignmentMutationFetcher(id, requestOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type getAssignmentsResponse200 = {
-  data: AssignmentResponse[]
-  status: 200
-}
+  data: AssignmentResponse[];
+  status: 200;
+};
 
-export type getAssignmentsResponseSuccess = (getAssignmentsResponse200) & {
+export type getAssignmentsResponseSuccess = getAssignmentsResponse200 & {
   headers: Headers;
 };
-;
 
-export type getAssignmentsResponse = (getAssignmentsResponseSuccess)
+export type getAssignmentsResponse = getAssignmentsResponseSuccess;
 
-export const getGetAssignmentsUrl = (courseId: string,) => {
-
-
-
-
-  return `/courses/${courseId}/assignments`
-}
+export const getGetAssignmentsUrl = (courseId: string) => {
+  return `/courses/${courseId}/assignments`;
+};
 
 /**
  * @summary コースの課題一覧を取得する
  */
-export const getAssignments = async (courseId: string, options?: RequestInit): Promise<getAssignmentsResponse> => {
-
-  return customFetch<getAssignmentsResponse>(getGetAssignmentsUrl(courseId),
-  {
+export const getAssignments = async (
+  courseId: string,
+  options?: RequestInit,
+): Promise<getAssignmentsResponse> => {
+  return customFetch<getAssignmentsResponse>(getGetAssignmentsUrl(courseId), {
     ...options,
-    method: 'GET'
+    method: "GET",
+  });
+};
 
+export const getGetAssignmentsKey = (courseId: string) =>
+  [`/courses/${courseId}/assignments`] as const;
 
-  }
-);}
-
-
-
-
-export const getGetAssignmentsKey = (courseId: string,) => [`/courses/${courseId}/assignments`] as const;
-
-export type GetAssignmentsQueryResult = NonNullable<Awaited<ReturnType<typeof getAssignments>>>
+export type GetAssignmentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAssignments>>
+>;
 
 /**
  * @summary コースの課題一覧を取得する
  */
 export const useGetAssignments = <TError = unknown>(
-  courseId: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getAssignments>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof customFetch> }
+  courseId: string,
+  options?: {
+    swr?: SWRConfiguration<
+      Awaited<ReturnType<typeof getAssignments>>,
+      TError
+    > & { swrKey?: Key; enabled?: boolean };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false && courseId !== null && courseId !== undefined
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetAssignmentsKey(courseId) : null);
-  const swrFn = () => getAssignments(courseId, requestOptions)
+  const isEnabled =
+    swrOptions?.enabled !== false &&
+    courseId !== null &&
+    courseId !== undefined;
+  const swrKey =
+    swrOptions?.swrKey ??
+    (() => (isEnabled ? getGetAssignmentsKey(courseId) : null));
+  const swrFn = () => getAssignments(courseId, requestOptions);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+    swrKey,
+    swrFn,
+    swrOptions,
+  );
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type createAssignmentResponse201 = {
-  data: AssignmentResponse
-  status: 201
-}
+  data: AssignmentResponse;
+  status: 201;
+};
 
-export type createAssignmentResponseSuccess = (createAssignmentResponse201) & {
+export type createAssignmentResponseSuccess = createAssignmentResponse201 & {
   headers: Headers;
 };
-;
 
-export type createAssignmentResponse = (createAssignmentResponseSuccess)
+export type createAssignmentResponse = createAssignmentResponseSuccess;
 
-export const getCreateAssignmentUrl = (courseId: string,) => {
-
-
-
-
-  return `/courses/${courseId}/assignments`
-}
+export const getCreateAssignmentUrl = (courseId: string) => {
+  return `/courses/${courseId}/assignments`;
+};
 
 /**
  * @summary 課題を作成する
  */
-export const createAssignment = async (courseId: string,
-    createAssignmentRequest: CreateAssignmentRequest, options?: RequestInit): Promise<createAssignmentResponse> => {
+export const createAssignment = async (
+  courseId: string,
+  createAssignmentRequest: CreateAssignmentRequest,
+  options?: RequestInit,
+): Promise<createAssignmentResponse> => {
+  return customFetch<createAssignmentResponse>(
+    getCreateAssignmentUrl(courseId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(createAssignmentRequest),
+    },
+  );
+};
 
-  return customFetch<createAssignmentResponse>(getCreateAssignmentUrl(courseId),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(createAssignmentRequest)
-  }
-);}
-
-
-
-
-export const getCreateAssignmentMutationFetcher = (courseId: string, options?: SecondParameter<typeof customFetch>) => {
+export const getCreateAssignmentMutationFetcher = (
+  courseId: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
   return (_: Key, { arg }: { arg: CreateAssignmentRequest }) => {
     return createAssignment(courseId, arg, options);
-  }
-}
-export const getCreateAssignmentMutationKey = (courseId: string,) => [`/courses/${courseId}/assignments`] as const;
+  };
+};
+export const getCreateAssignmentMutationKey = (courseId: string) =>
+  [`/courses/${courseId}/assignments`] as const;
 
-export type CreateAssignmentMutationResult = NonNullable<Awaited<ReturnType<typeof createAssignment>>>
+export type CreateAssignmentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createAssignment>>
+>;
 
 /**
  * @summary 課題を作成する
  */
 export const useCreateAssignment = <TError = unknown>(
-  courseId: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createAssignment>>, TError, Key, CreateAssignmentRequest, Awaited<ReturnType<typeof createAssignment>>> & { swrKey?: string }, request?: SecondParameter<typeof customFetch>}
+  courseId: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof createAssignment>>,
+      TError,
+      Key,
+      CreateAssignmentRequest,
+      Awaited<ReturnType<typeof createAssignment>>
+    > & { swrKey?: string };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
   const swrKey = swrOptions?.swrKey ?? getCreateAssignmentMutationKey(courseId);
   const swrFn = getCreateAssignmentMutationFetcher(courseId, requestOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type getTestCasesResponse200 = {
-  data: TestCaseResponse[]
-  status: 200
-}
+  data: TestCaseResponse[];
+  status: 200;
+};
 
-export type getTestCasesResponseSuccess = (getTestCasesResponse200) & {
+export type getTestCasesResponseSuccess = getTestCasesResponse200 & {
   headers: Headers;
 };
-;
 
-export type getTestCasesResponse = (getTestCasesResponseSuccess)
+export type getTestCasesResponse = getTestCasesResponseSuccess;
 
-export const getGetTestCasesUrl = (id: string,) => {
-
-
-
-
-  return `/assignments/${id}/test-cases`
-}
+export const getGetTestCasesUrl = (id: string) => {
+  return `/assignments/${id}/test-cases`;
+};
 
 /**
  * @summary テストケース一覧を取得する
  */
-export const getTestCases = async (id: string, options?: RequestInit): Promise<getTestCasesResponse> => {
-
-  return customFetch<getTestCasesResponse>(getGetTestCasesUrl(id),
-  {
+export const getTestCases = async (
+  id: string,
+  options?: RequestInit,
+): Promise<getTestCasesResponse> => {
+  return customFetch<getTestCasesResponse>(getGetTestCasesUrl(id), {
     ...options,
-    method: 'GET'
+    method: "GET",
+  });
+};
 
+export const getGetTestCasesKey = (id: string) =>
+  [`/assignments/${id}/test-cases`] as const;
 
-  }
-);}
-
-
-
-
-export const getGetTestCasesKey = (id: string,) => [`/assignments/${id}/test-cases`] as const;
-
-export type GetTestCasesQueryResult = NonNullable<Awaited<ReturnType<typeof getTestCases>>>
+export type GetTestCasesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTestCases>>
+>;
 
 /**
  * @summary テストケース一覧を取得する
  */
 export const useGetTestCases = <TError = unknown>(
-  id: string, options?: { swr?:SWRConfiguration<Awaited<ReturnType<typeof getTestCases>>, TError> & { swrKey?: Key, enabled?: boolean }, request?: SecondParameter<typeof customFetch> }
+  id: string,
+  options?: {
+    swr?: SWRConfiguration<Awaited<ReturnType<typeof getTestCases>>, TError> & {
+      swrKey?: Key;
+      enabled?: boolean;
+    };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
-  const isEnabled = swrOptions?.enabled !== false && id !== null && id !== undefined
-  const swrKey = swrOptions?.swrKey ?? (() => isEnabled ? getGetTestCasesKey(id) : null);
-  const swrFn = () => getTestCases(id, requestOptions)
+  const isEnabled =
+    swrOptions?.enabled !== false && id !== null && id !== undefined;
+  const swrKey =
+    swrOptions?.swrKey ?? (() => (isEnabled ? getGetTestCasesKey(id) : null));
+  const swrFn = () => getTestCases(id, requestOptions);
 
-  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(swrKey, swrFn, swrOptions)
+  const query = useSwr<Awaited<ReturnType<typeof swrFn>>, TError>(
+    swrKey,
+    swrFn,
+    swrOptions,
+  );
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};
 export type createTestCaseResponse201 = {
-  data: TestCaseResponse
-  status: 201
-}
+  data: TestCaseResponse;
+  status: 201;
+};
 
-export type createTestCaseResponseSuccess = (createTestCaseResponse201) & {
+export type createTestCaseResponseSuccess = createTestCaseResponse201 & {
   headers: Headers;
 };
-;
 
-export type createTestCaseResponse = (createTestCaseResponseSuccess)
+export type createTestCaseResponse = createTestCaseResponseSuccess;
 
-export const getCreateTestCaseUrl = (id: string,) => {
-
-
-
-
-  return `/assignments/${id}/test-cases`
-}
+export const getCreateTestCaseUrl = (id: string) => {
+  return `/assignments/${id}/test-cases`;
+};
 
 /**
  * @summary テストケースを作成する
  */
-export const createTestCase = async (id: string,
-    createTestCaseRequest: CreateTestCaseRequest, options?: RequestInit): Promise<createTestCaseResponse> => {
-
-  return customFetch<createTestCaseResponse>(getCreateTestCaseUrl(id),
-  {
+export const createTestCase = async (
+  id: string,
+  createTestCaseRequest: CreateTestCaseRequest,
+  options?: RequestInit,
+): Promise<createTestCaseResponse> => {
+  return customFetch<createTestCaseResponse>(getCreateTestCaseUrl(id), {
     ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(createTestCaseRequest)
-  }
-);}
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createTestCaseRequest),
+  });
+};
 
-
-
-
-export const getCreateTestCaseMutationFetcher = (id: string, options?: SecondParameter<typeof customFetch>) => {
+export const getCreateTestCaseMutationFetcher = (
+  id: string,
+  options?: SecondParameter<typeof customFetch>,
+) => {
   return (_: Key, { arg }: { arg: CreateTestCaseRequest }) => {
     return createTestCase(id, arg, options);
-  }
-}
-export const getCreateTestCaseMutationKey = (id: string,) => [`/assignments/${id}/test-cases`] as const;
+  };
+};
+export const getCreateTestCaseMutationKey = (id: string) =>
+  [`/assignments/${id}/test-cases`] as const;
 
-export type CreateTestCaseMutationResult = NonNullable<Awaited<ReturnType<typeof createTestCase>>>
+export type CreateTestCaseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createTestCase>>
+>;
 
 /**
  * @summary テストケースを作成する
  */
 export const useCreateTestCase = <TError = unknown>(
-  id: string, options?: { swr?:SWRMutationConfiguration<Awaited<ReturnType<typeof createTestCase>>, TError, Key, CreateTestCaseRequest, Awaited<ReturnType<typeof createTestCase>>> & { swrKey?: string }, request?: SecondParameter<typeof customFetch>}
+  id: string,
+  options?: {
+    swr?: SWRMutationConfiguration<
+      Awaited<ReturnType<typeof createTestCase>>,
+      TError,
+      Key,
+      CreateTestCaseRequest,
+      Awaited<ReturnType<typeof createTestCase>>
+    > & { swrKey?: string };
+    request?: SecondParameter<typeof customFetch>;
+  },
 ) => {
-
-  const {swr: swrOptions, request: requestOptions} = options ?? {}
+  const { swr: swrOptions, request: requestOptions } = options ?? {};
 
   const swrKey = swrOptions?.swrKey ?? getCreateTestCaseMutationKey(id);
   const swrFn = getCreateTestCaseMutationFetcher(id, requestOptions);
 
-  const query = useSWRMutation(swrKey, swrFn, swrOptions)
+  const query = useSWRMutation(swrKey, swrFn, swrOptions);
 
   return {
     swrKey,
-    ...query
-  }
-}
+    ...query,
+  };
+};

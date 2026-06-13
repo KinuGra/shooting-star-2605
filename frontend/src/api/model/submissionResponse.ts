@@ -4,7 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { JudgeResultResponse } from './judgeResultResponse';
+import type { JudgeResultResponse } from "./judgeResultResponse";
 
 export interface SubmissionResponse {
   id?: string;

@@ -9,8 +9,8 @@ export interface RegisterRequest {
   email: string;
   name: string;
   /**
-     * @minLength 8
-     * @maxLength 2147483647
-     */
+   * @minLength 8
+   * @maxLength 2147483647
+   */
   password: string;
 }

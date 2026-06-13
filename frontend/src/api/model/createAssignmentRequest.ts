@@ -4,7 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { CreateAssignmentRequestSubmissionType } from './createAssignmentRequestSubmissionType';
+import type { CreateAssignmentRequestSubmissionType } from "./createAssignmentRequestSubmissionType";
 
 export interface CreateAssignmentRequest {
   title: string;

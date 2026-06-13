@@ -4,7 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { StudentGradeResponse } from './studentGradeResponse';
+import type { StudentGradeResponse } from "./studentGradeResponse";
 
 export interface CourseGradeResponse {
   courseId?: string;

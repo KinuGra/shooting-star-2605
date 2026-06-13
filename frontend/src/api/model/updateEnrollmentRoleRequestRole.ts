@@ -5,11 +5,11 @@
  * OpenAPI spec version: v0
  */
 
-export type UpdateEnrollmentRoleRequestRole = typeof UpdateEnrollmentRoleRequestRole[keyof typeof UpdateEnrollmentRoleRequestRole];
-
+export type UpdateEnrollmentRoleRequestRole =
+  (typeof UpdateEnrollmentRoleRequestRole)[keyof typeof UpdateEnrollmentRoleRequestRole];
 
 export const UpdateEnrollmentRoleRequestRole = {
-  TEACHER: 'TEACHER',
-  TA: 'TA',
-  STUDENT: 'STUDENT',
+  TEACHER: "TEACHER",
+  TA: "TA",
+  STUDENT: "STUDENT",
 } as const;

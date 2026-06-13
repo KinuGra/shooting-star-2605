@@ -4,7 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { UpdateEnrollmentRoleRequestRole } from './updateEnrollmentRoleRequestRole';
+import type { UpdateEnrollmentRoleRequestRole } from "./updateEnrollmentRoleRequestRole";
 
 export interface UpdateEnrollmentRoleRequest {
   role: UpdateEnrollmentRoleRequestRole;

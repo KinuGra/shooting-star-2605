@@ -5,11 +5,11 @@
  * OpenAPI spec version: v0
  */
 
-export type UpdateAssignmentRequestSubmissionType = typeof UpdateAssignmentRequestSubmissionType[keyof typeof UpdateAssignmentRequestSubmissionType];
-
+export type UpdateAssignmentRequestSubmissionType =
+  (typeof UpdateAssignmentRequestSubmissionType)[keyof typeof UpdateAssignmentRequestSubmissionType];
 
 export const UpdateAssignmentRequestSubmissionType = {
-  CODE: 'CODE',
-  FILE: 'FILE',
-  REPORT: 'REPORT',
+  CODE: "CODE",
+  FILE: "FILE",
+  REPORT: "REPORT",
 } as const;

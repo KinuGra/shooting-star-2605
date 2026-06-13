@@ -5,4 +5,4 @@
  * OpenAPI spec version: v0
  */
 
-export type Logout200 = {[key: string]: string};
+export type Logout200 = { [key: string]: string };
