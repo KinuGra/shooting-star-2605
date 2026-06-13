@@ -30,5 +30,15 @@ public class DataInitializer implements ApplicationRunner {
             admin.setEmailVerified(true);
             userRepository.save(admin);
         }
+
+        if (userRepository.findByEmail("teacher@shootingstar.com").isEmpty()) {
+            User teacher = new User();
+            teacher.setEmail("teacher@shootingstar.com");
+            teacher.setName("テスト教員");
+            teacher.setPasswordHash(passwordEncoder.encode("Teacher1234!"));
+            teacher.setGlobalRole(GlobalRole.TEACHER);
+            teacher.setEmailVerified(true);
+            userRepository.save(teacher);
+        }
     }
 }
