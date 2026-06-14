@@ -95,64 +95,6 @@ public class SubmissionService {
         return toResponse(saved, false);
     }
 
-    @Transactional(readOnly = true)
-    public List<SubmissionResponse> getSubmissions(UserPrincipal principal, UUID assignmentId) {
-        Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
-
-        User user = userRepository.findById(principal.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        CourseRole role = getCourseRole(assignment.getCourse(), user);
-
-        if (role == CourseRole.TEACHER || role == CourseRole.TA) {
-            return submissionRepository.findByAssignment(assignment).stream()
-                    .map(s -> toResponse(s, false))
-                    .collect(Collectors.toList());
-        }
-
-        return submissionRepository.findByAssignmentAndUser(assignment, user).stream()
-                .map(s -> toResponse(s, !s.isReturned()))
-                .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public SubmissionResponse getSubmission(UserPrincipal principal, UUID submissionId) {
-        Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found"));
-
-        User user = userRepository.findById(principal.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        CourseRole role = getCourseRole(submission.getAssignment().getCourse(), user);
-
-        if (role == CourseRole.STUDENT) {
-            if (!submission.getUser().getId().equals(principal.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-            }
-            return toResponse(submission, !submission.isReturned());
-        }
-
-        return toResponse(submission, false);
-    }
-
-    public SubmissionResponse updateScore(UserPrincipal principal, UUID submissionId, UpdateScoreRequest req) {
-        Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found"));
-
-        User user = userRepository.findById(principal.getId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
-
-        CourseRole role = getCourseRole(submission.getAssignment().getCourse(), user);
-        if (role != CourseRole.TEACHER && role != CourseRole.TA) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
-        submission.setScore(req.getScore());
-        Submission saved = submissionRepository.save(submission);
-        return toResponse(saved, false);
-    }
-
     public List<SubmissionResponse> returnSubmissions(UserPrincipal principal, UUID assignmentId) {
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
@@ -166,7 +108,6 @@ public class SubmissionService {
         }
 
         List<Submission> allSubmissions = submissionRepository.findByAssignment(assignment);
-
         Map<UUID, Submission> latestPerUser = new LinkedHashMap<>();
         for (Submission s : allSubmissions) {
             UUID userId = s.getUser().getId();
@@ -187,6 +128,64 @@ public class SubmissionService {
         return toReturn.stream()
                 .map(s -> toResponse(s, false))
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<SubmissionResponse> getSubmissions(UserPrincipal principal, UUID assignmentId) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found"));
+
+        User user = userRepository.findById(principal.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        CourseRole role = getCourseRole(assignment.getCourse(), user);
+
+        if (role == CourseRole.TEACHER || role == CourseRole.TA) {
+            return submissionRepository.findByAssignment(assignment).stream()
+                    .map(s -> toResponse(s, false))
+                    .collect(Collectors.toList());
+        }
+
+        return submissionRepository.findByAssignmentAndUser(assignment, user).stream()
+                .map(s -> toResponse(s, false))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public SubmissionResponse getSubmission(UserPrincipal principal, UUID submissionId) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found"));
+
+        User user = userRepository.findById(principal.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        CourseRole role = getCourseRole(submission.getAssignment().getCourse(), user);
+
+        if (role == CourseRole.STUDENT) {
+            if (!submission.getUser().getId().equals(principal.getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
+            return toResponse(submission, false);
+        }
+
+        return toResponse(submission, false);
+    }
+
+    public SubmissionResponse updateScore(UserPrincipal principal, UUID submissionId, UpdateScoreRequest req) {
+        Submission submission = submissionRepository.findById(submissionId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Submission not found"));
+
+        User user = userRepository.findById(principal.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        CourseRole role = getCourseRole(submission.getAssignment().getCourse(), user);
+        if (role != CourseRole.TEACHER && role != CourseRole.TA) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
+        submission.setScore(req.getScore());
+        Submission saved = submissionRepository.save(submission);
+        return toResponse(saved, false);
     }
 
     private CourseRole getCourseRole(Course course, User user) {

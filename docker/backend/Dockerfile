@@ -1,7 +1,8 @@
 # ─── Dev stage ────────────────────────────────────────────────
 FROM gradle:8.8-jdk21-alpine AS dev
 WORKDIR /app
-# Source is mounted via docker-compose volume
+# Docker CLI: バックエンドからジャッジ用一時コンテナを起動するために必要
+RUN apk add --no-cache docker-cli
 EXPOSE 8080
 CMD ["gradle", "bootRun", "--no-daemon", "--info"]
 

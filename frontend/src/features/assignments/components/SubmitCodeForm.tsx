@@ -18,7 +18,7 @@ const submitSchema = z.object({
 
 type SubmitFormData = z.infer<typeof submitSchema>;
 
-const LANGUAGES = ["Python", "Java", "C++", "C", "JavaScript", "Go", "Rust"];
+const LANGUAGES = ["Python", "JavaScript", "C", "C++", "Java"];
 
 function fmtDate(iso: string) {
   return new Intl.DateTimeFormat("ja-JP", {

@@ -72,9 +72,6 @@ public class FeedbackService {
             if (!submission.getUser().getId().equals(principal.getId())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "自分の提出のみ閲覧できます");
             }
-            if (!submission.isReturned()) {
-                return List.of();
-            }
         }
         return feedbackCommentRepository.findBySubmission(submission).stream()
                 .map(this::toFeedbackResponse)
