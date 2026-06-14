@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { UserMenu } from "@/components/UserMenu";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useMe } from "@/api/generated/auth/auth";
 import { getAuthToken } from "@/lib/auth-client";
 
@@ -51,6 +52,7 @@ export default function TeacherLayout({
         role="teacher"
         rightSlot={
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ThemeSwitcher />
             <Link
               href="/teacher/classes/new"
               style={{
