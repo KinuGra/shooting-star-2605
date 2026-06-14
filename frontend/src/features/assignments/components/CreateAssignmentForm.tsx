@@ -10,7 +10,7 @@ import {
   createTestCase,
 } from "@/api/generated/assignments/assignments";
 
-const LANGUAGES = ["Python", "Java", "C++", "C", "JavaScript", "Go", "Rust"];
+const LANGUAGES = ["Python", "JavaScript", "C", "C++", "Java"];
 
 const testCaseSchema = z.object({
   input: z.string().min(1, "入力を入力してください"),

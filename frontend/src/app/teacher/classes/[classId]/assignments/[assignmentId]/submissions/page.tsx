@@ -98,6 +98,9 @@ export default function SubmissionsListPage({ params }: Props) {
       new Date(a.submittedAt ?? "").getTime(),
   );
 
+  const acCount = submissions.filter(
+    (s) => overallStatus(s.judgeResults) === "AC",
+  ).length;
   const unreturnedCount = submissions.filter((s) => !s.returned).length;
 
   async function handleReturn() {
@@ -105,9 +108,6 @@ export default function SubmissionsListPage({ params }: Props) {
     mutateSubmissions();
   }
 
-  const acCount = submissions.filter(
-    (s) => overallStatus(s.judgeResults) === "AC",
-  ).length;
   const avgScore =
     submissions.length > 0
       ? Math.round(
@@ -191,7 +191,19 @@ export default function SubmissionsListPage({ params }: Props) {
             {course.name}
           </p>
         </div>
-        {unreturnedCount > 0 && (
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 24,
+        }}
+      >
+        {unreturnedCount > 0 ? (
           <button
             type="button"
             onClick={handleReturn}
@@ -208,22 +220,21 @@ export default function SubmissionsListPage({ params }: Props) {
               whiteSpace: "nowrap",
             }}
           >
-            {isReturning
-              ? "返却中..."
-              : `一括返却（${unreturnedCount}件）`}
+            {isReturning ? "返却中..." : `一括返却（${unreturnedCount}件）`}
           </button>
-        )}
-        {unreturnedCount === 0 && submissions.length > 0 && (
-          <span
-            style={{
-              fontSize: "0.8125rem",
-              color: "var(--color-primary)",
-              fontWeight: 500,
-              padding: "8px 0",
-            }}
-          >
-            ✓ 全員に返却済み
-          </span>
+        ) : (
+          submissions.length > 0 && (
+            <span
+              style={{
+                fontSize: "0.8125rem",
+                color: "var(--color-primary)",
+                fontWeight: 500,
+                padding: "8px 0",
+              }}
+            >
+              ✓ 全員に返却済み
+            </span>
+          )
         )}
       </div>
 
