@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useGetAssignments } from "@/api/generated/assignments/assignments";
-import type { AssignmentResponse } from "@/api/model";
+import { useGetSubmissions } from "@/api/generated/submissions/submissions";
+import type { AssignmentResponse, SubmissionResponse } from "@/api/model";
 
 function fmtDeadline(iso: string) {
   const d = new Date(iso);
@@ -14,6 +15,19 @@ function fmtDeadline(iso: string) {
     minute: "2-digit",
   }).format(d);
   return { label: isPast ? `${label} (締切)` : label, isPast };
+}
+
+function StudentScore({ assignmentId, maxScore }: { assignmentId: string; maxScore?: number | null }) {
+  const { data } = useGetSubmissions(assignmentId);
+  const submissions = (data?.data as SubmissionResponse[] | undefined) ?? [];
+  if (submissions.length === 0) return <span style={{ fontSize: "0.875rem", color: "var(--color-text-muted)" }}>{maxScore ?? "—"}</span>;
+  const latest = submissions.sort((a, b) => new Date(b.submittedAt ?? "").getTime() - new Date(a.submittedAt ?? "").getTime())[0];
+  const score = latest.score ?? "—";
+  return (
+    <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-text-primary)", fontVariantNumeric: "tabular-nums" }}>
+      {score}<span style={{ fontWeight: 400, color: "var(--color-text-muted)" }}>/{maxScore ?? "—"}</span>
+    </span>
+  );
 }
 
 interface Props {
@@ -75,7 +89,7 @@ export function AssignmentList({ courseId, role }: Props) {
           background: "var(--color-bg)",
         }}
       >
-        {["#", "課題名", "期限", "満点", ""].map((h) => (
+        {["#", "課題名", "期限", role === "student" ? "得点" : "満点", ""].map((h) => (
           <span
             key={h}
             style={{
@@ -173,16 +187,13 @@ export function AssignmentList({ courseId, role }: Props) {
               >
                 {dl}
               </span>
-              <span
-                style={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "var(--color-text-primary)",
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {assignment.maxScore ?? "—"}
-              </span>
+              {role === "student" ? (
+                <StudentScore assignmentId={assignment.id ?? ""} maxScore={assignment.maxScore} />
+              ) : (
+                <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--color-text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                  {assignment.maxScore ?? "—"}
+                </span>
+              )}
               <span
                 style={{ color: "var(--color-text-muted)", fontSize: "1rem" }}
               >

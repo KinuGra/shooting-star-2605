@@ -9,7 +9,18 @@ import {
   useSubmit,
   useGetSubmissions,
 } from "@/api/generated/submissions/submissions";
-import type { AssignmentResponse, SubmissionResponse } from "@/api/model";
+import type { AssignmentResponse, SubmissionResponse, JudgeResultResponse } from "@/api/model";
+import { JudgeBadge } from "@/components/Badge";
+import type { JudgeStatus } from "@/lib/types";
+
+const STATUS_PRIORITY: JudgeStatus[] = ["WA", "RE", "CE", "TLE", "MLE", "AC"];
+function overallStatus(results: JudgeResultResponse[] | undefined): JudgeStatus {
+  if (!results || results.length === 0) return "pending";
+  for (const s of STATUS_PRIORITY) {
+    if (results.some((r) => r.status === s)) return s;
+  }
+  return "AC";
+}
 
 const submitSchema = z.object({
   codeContent: z.string().min(1, "コードを入力してください"),
@@ -332,51 +343,43 @@ export function SubmitCodeForm({ assignment, courseId }: Props) {
           style={{
             borderTop: "1px solid var(--color-border)",
             background: "var(--color-surface)",
-            padding: "12px 24px",
           }}
         >
-          <p
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              color: "var(--color-text-muted)",
-              marginBottom: 8,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            提出履歴
-          </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ padding: "12px 24px 8px", display: "flex", alignItems: "center", gap: 8 }}>
+            <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              提出履歴
+            </p>
+            <span style={{ fontSize: "0.6875rem", color: "var(--color-text-muted)", background: "var(--color-neutral-surface)", borderRadius: 10, padding: "1px 7px" }}>
+              {submissions.length}件
+            </span>
+          </div>
+          <div style={{ borderTop: "1px solid var(--color-divider)" }}>
             {submissions.map((sub, idx) => (
               <Link
                 key={sub.id}
                 href={`/student/classes/${courseId}/assignments/${assignment.id}/submissions/${sub.id}`}
                 style={{
-                  display: "flex",
+                  display: "grid",
+                  gridTemplateColumns: "32px auto 1fr auto",
                   alignItems: "center",
-                  gap: 8,
-                  padding: "5px 12px",
-                  background: "var(--color-bg)",
-                  border: "1px solid var(--color-border)",
-                  borderRadius: 6,
+                  gap: 12,
+                  padding: "10px 24px",
+                  borderBottom: idx < submissions.length - 1 ? "1px solid var(--color-divider)" : "none",
                   textDecoration: "none",
-                  fontSize: "0.8125rem",
+                  background: "transparent",
+                  transition: "background 0.1s",
                 }}
+                className="card-link"
               >
-                <span style={{ color: "var(--color-text-muted)" }}>
+                <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontVariantNumeric: "tabular-nums" }}>
                   #{submissions.length - idx}
                 </span>
-                <span style={{ color: "var(--color-text-secondary)" }}>
-                  {sub.score ?? "—"}/{assignment.maxScore ?? "—"}点
-                </span>
-                <span
-                  style={{
-                    color: "var(--color-text-muted)",
-                    fontSize: "0.6875rem",
-                  }}
-                >
+                <JudgeBadge status={overallStatus(sub.judgeResults)} size="sm" />
+                <span style={{ fontSize: "0.8125rem", color: "var(--color-text-secondary)" }}>
                   {fmtDate(sub.submittedAt ?? "")}
+                </span>
+                <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-text-primary)", fontVariantNumeric: "tabular-nums" }}>
+                  {sub.score ?? "—"}<span style={{ fontWeight: 400, color: "var(--color-text-muted)", fontSize: "0.75rem" }}>/{assignment.maxScore ?? "—"}点</span>
                 </span>
               </Link>
             ))}
