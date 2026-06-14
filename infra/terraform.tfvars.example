@@ -11,3 +11,11 @@ backend_cpu     = 256
 backend_memory  = 512
 frontend_cpu    = 256
 frontend_memory = 512
+
+# PostgreSQL RDS
+db_instance_class = "db.t3.micro"
+db_username       = "shootingstar"
+db_password       = "<CHANGE_ME_STRONG_PASSWORD>"
+
+# JWT signing secret (must be >= 64 chars)
+jwt_secret = "<CHANGE_ME_64CHAR_RANDOM_SECRET>"
