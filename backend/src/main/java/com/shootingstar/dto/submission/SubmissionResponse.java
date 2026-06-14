@@ -18,7 +18,7 @@ public class SubmissionResponse {
     private String fileUrl;
     private String reportContent;
     private OffsetDateTime submittedAt;
-    private boolean isReturned;
+    private boolean returned;
     private OffsetDateTime returnedAt;
     private Integer score;
     private List<JudgeResultResponse> judgeResults;
@@ -53,8 +53,8 @@ public class SubmissionResponse {
     public OffsetDateTime getSubmittedAt() { return submittedAt; }
     public void setSubmittedAt(OffsetDateTime submittedAt) { this.submittedAt = submittedAt; }
 
-    public boolean isReturned() { return isReturned; }
-    public void setReturned(boolean returned) { isReturned = returned; }
+    public boolean isReturned() { return returned; }
+    public void setReturned(boolean returned) { this.returned = returned; }
 
     public OffsetDateTime getReturnedAt() { return returnedAt; }
     public void setReturnedAt(OffsetDateTime returnedAt) { this.returnedAt = returnedAt; }
