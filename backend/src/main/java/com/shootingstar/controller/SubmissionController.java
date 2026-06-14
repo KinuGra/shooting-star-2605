@@ -51,6 +51,14 @@ public class SubmissionController {
         return submissionService.getSubmission(principal, id);
     }
 
+    @PostMapping("/assignments/{assignmentId}/return")
+    @Operation(summary = "提出物を返却")
+    public List<SubmissionResponse> returnSubmissions(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable UUID assignmentId) {
+        return submissionService.returnSubmissions(principal, assignmentId);
+    }
+
     @PutMapping("/submissions/{id}/score")
     @Operation(summary = "スコア更新")
     public SubmissionResponse updateScore(
@@ -60,11 +68,4 @@ public class SubmissionController {
         return submissionService.updateScore(principal, id, req);
     }
 
-    @PostMapping("/assignments/{assignmentId}/return")
-    @Operation(summary = "提出物を返却")
-    public List<SubmissionResponse> returnSubmissions(
-            @AuthenticationPrincipal UserPrincipal principal,
-            @PathVariable UUID assignmentId) {
-        return submissionService.returnSubmissions(principal, assignmentId);
-    }
 }
