@@ -33,6 +33,84 @@
   --radius-xl: 16px;
 }
 
+/* ── 可愛い theme ─────────────────────────────── */
+html[data-theme="kawaii"] {
+  --color-bg: #fff0f6;
+  --color-surface: #ffffff;
+  --color-border: #fcc2d7;
+  --color-divider: #ffe3ec;
+
+  --color-text-primary: #5c1f45;
+  --color-text-secondary: #9c4478;
+  --color-text-muted: #c77ba0;
+
+  --color-primary: #e64980;
+  --color-primary-hover: #c2255c;
+  --color-primary-surface: #fcc2d7;
+  --color-primary-subtle: #ffecf4;
+
+  --color-success: #2f9e44;
+  --color-success-surface: #d3f9d8;
+  --color-warning: #e67700;
+  --color-warning-surface: #fff3bf;
+  --color-danger: #c92a2a;
+  --color-danger-surface: #ffe3e3;
+  --color-neutral: #9c4478;
+  --color-neutral-surface: #fff0f6;
+}
+
+/* ── かっこいい theme (dark) ──────────────────── */
+html[data-theme="kakkoii"] {
+  --color-bg: #0d1117;
+  --color-surface: #161b22;
+  --color-border: #30363d;
+  --color-divider: #21262d;
+
+  --color-text-primary: #e6edf3;
+  --color-text-secondary: #8d96a0;
+  --color-text-muted: #656d76;
+
+  --color-primary: #58a6ff;
+  --color-primary-hover: #79c0ff;
+  --color-primary-surface: #1f3858;
+  --color-primary-subtle: #0d2043;
+
+  --color-success: #3fb950;
+  --color-success-surface: #0f2b14;
+  --color-warning: #d29922;
+  --color-warning-surface: #2b200a;
+  --color-danger: #f85149;
+  --color-danger-surface: #3d0c07;
+  --color-neutral: #8d96a0;
+  --color-neutral-surface: #21262d;
+}
+
+/* ── 奇抜 theme ───────────────────────────────── */
+html[data-theme="kibatsu"] {
+  --color-bg: #1a0030;
+  --color-surface: #2d0050;
+  --color-border: #ff00cc;
+  --color-divider: #6600aa;
+
+  --color-text-primary: #ff99ff;
+  --color-text-secondary: #00ffcc;
+  --color-text-muted: #ff6699;
+
+  --color-primary: #00ff99;
+  --color-primary-hover: #00cc77;
+  --color-primary-surface: #003322;
+  --color-primary-subtle: #001a11;
+
+  --color-success: #00ffff;
+  --color-success-surface: #003333;
+  --color-warning: #ffff00;
+  --color-warning-surface: #333300;
+  --color-danger: #ff4444;
+  --color-danger-surface: #330000;
+  --color-neutral: #aa66ff;
+  --color-neutral-surface: #220044;
+}
+
 *,
 *::before,
 *::after {

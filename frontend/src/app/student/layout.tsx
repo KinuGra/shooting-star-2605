@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
 import { UserMenu } from "@/components/UserMenu";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 export default function StudentLayout({
   children,
@@ -20,6 +21,7 @@ export default function StudentLayout({
         role="student"
         rightSlot={
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <ThemeSwitcher />
             <Link
               href="/student/classes/join"
               style={{
