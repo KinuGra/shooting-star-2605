@@ -21,7 +21,7 @@ function overallStatus(
   for (const s of STATUS_PRIORITY) {
     if (results.some((r) => r.status === s)) return s;
   }
-  return "AC";
+  return results.some((r) => r.status) ? "RE" : "pending";
 }
 
 const SUBMISSION_TYPE_LABELS: Record<string, string> = {
