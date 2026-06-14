@@ -147,7 +147,7 @@ public class SubmissionService {
         }
 
         return submissionRepository.findByAssignmentAndUser(assignment, user).stream()
-                .map(s -> toResponse(s, false))
+                .map(s -> toResponse(s, !s.isReturned()))
                 .collect(Collectors.toList());
     }
 
@@ -165,7 +165,7 @@ public class SubmissionService {
             if (!submission.getUser().getId().equals(principal.getId())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN);
             }
-            return toResponse(submission, false);
+            return toResponse(submission, !submission.isReturned());
         }
 
         return toResponse(submission, false);

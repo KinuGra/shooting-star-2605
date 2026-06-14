@@ -1,12 +1,43 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/Navbar";
 import { UserMenu } from "@/components/UserMenu";
+import { useMe } from "@/api/generated/auth/auth";
+import { getAuthToken } from "@/lib/auth-client";
 
 export default function TeacherLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const { data, isLoading } = useMe({ swr: { enabled: !!getAuthToken() } });
+
+  useEffect(() => {
+    if (!getAuthToken()) {
+      router.replace("/auth/login");
+      return;
+    }
+    if (!isLoading && data) {
+      const role = data.data?.role;
+      if (role !== "TEACHER" && role !== "ADMIN") {
+        router.replace("/student");
+      }
+    }
+  }, [isLoading, data, router]);
+
+  if (!getAuthToken() || isLoading || !data) {
+    return null;
+  }
+
+  const role = data.data?.role;
+  if (role !== "TEACHER" && role !== "ADMIN") {
+    return null;
+  }
+
   return (
     <div
       style={{
