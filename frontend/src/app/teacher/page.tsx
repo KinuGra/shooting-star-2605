@@ -38,30 +38,17 @@ export default function TeacherDashboard() {
         >
           担当授業
         </h2>
-        <div style={{ display: "flex", gap: 12 }}>
-          <Link
-            href="/teacher/accounts/new"
-            style={{
-              fontSize: "0.8125rem",
-              color: "var(--color-text-secondary)",
-              textDecoration: "none",
-              fontWeight: 500,
-            }}
-          >
-            + 教師アカウント作成
-          </Link>
-          <Link
-            href="/teacher/classes/new"
-            style={{
-              fontSize: "0.8125rem",
-              color: "var(--color-primary)",
-              textDecoration: "none",
-              fontWeight: 500,
-            }}
-          >
-            + 授業を作成
-          </Link>
-        </div>
+        <Link
+          href="/teacher/classes/new"
+          style={{
+            fontSize: "0.8125rem",
+            color: "var(--color-primary)",
+            textDecoration: "none",
+            fontWeight: 500,
+          }}
+        >
+          + 授業を作成
+        </Link>
       </div>
 
       <TeacherCourseList />

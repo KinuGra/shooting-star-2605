@@ -69,12 +69,12 @@ export default function LoginPage() {
               textAlign: "center",
             }}
           >
-            アカウントをお持ちでない方は{" "}
+            学生の方は{" "}
             <Link
               href="/auth/register"
               style={{ color: "var(--color-primary)", textDecoration: "none" }}
             >
-              新規登録
+              学生登録
             </Link>
           </p>
         </div>
