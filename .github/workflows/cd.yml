@@ -100,13 +100,22 @@ jobs:
           BACKEND_IMAGE: ${{ needs.build-backend.outputs.image }}
           FRONTEND_IMAGE: ${{ needs.build-frontend.outputs.image }}
         run: |
-          # 現在のタスク定義を取得し、イメージURIだけ差し替えて新バージョンを登録
+          set -euo pipefail
+
           TASK_DEF=$(aws ecs describe-task-definition \
             --task-definition "$ECS_TASK_FAMILY" \
             --query 'taskDefinition' \
             --output json)
 
-          NEW_TASK_DEF=$(echo "$TASK_DEF" | jq \
+          if [ -z "$TASK_DEF" ] || [ "$TASK_DEF" = "null" ]; then
+            echo "ERROR: タスク定義 '$ECS_TASK_FAMILY' が取得できませんでした"
+            exit 1
+          fi
+
+          TMPFILE=$(mktemp /tmp/task-def-XXXXXX.json)
+          trap "rm -f $TMPFILE" EXIT
+
+          echo "$TASK_DEF" | jq \
             --arg backend "$BACKEND_IMAGE" \
             --arg frontend "$FRONTEND_IMAGE" \
             '
@@ -117,13 +126,12 @@ jobs:
                 end
               )) |
               del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)
-            ')
+            ' > "$TMPFILE"
 
-          NEW_TASK_ARN=$(echo "$NEW_TASK_DEF" | \
-            aws ecs register-task-definition \
-              --cli-input-json file:///dev/stdin \
-              --query 'taskDefinition.taskDefinitionArn' \
-              --output text)
+          NEW_TASK_ARN=$(aws ecs register-task-definition \
+            --cli-input-json "file://${TMPFILE}" \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
 
           echo "task_arn=${NEW_TASK_ARN}" >> "$GITHUB_OUTPUT"
 
