@@ -263,7 +263,9 @@ public class AssignmentService {
         res.setIsPublished(assignment.getIsPublished());
         res.setPublishAt(assignment.getPublishAt());
         res.setDeadlineAt(assignment.getDeadlineAt());
-        res.setMaxScore(assignment.getMaxScore());
+        int testCaseTotal = testCaseRepository.findByAssignmentOrderByOrderIndexAsc(assignment)
+                .stream().mapToInt(tc -> tc.getScore() != null ? tc.getScore() : 0).sum();
+        res.setMaxScore(assignment.getMaxScore() != null ? assignment.getMaxScore() : testCaseTotal);
         res.setLanguages(languages);
         res.setCreatedAt(assignment.getCreatedAt());
         res.setUpdatedAt(assignment.getUpdatedAt());
