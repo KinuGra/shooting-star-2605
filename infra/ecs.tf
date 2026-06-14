@@ -23,7 +23,13 @@ resource "aws_ecs_task_definition" "app" {
         protocol      = "tcp"
       }]
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = "prod" }
+        { name = "SPRING_PROFILES_ACTIVE",    value = "prod" },
+        { name = "SPRING_DATASOURCE_URL",     value = "jdbc:postgresql://${aws_db_instance.main.endpoint}/shootingstar" },
+        { name = "SPRING_DATASOURCE_USERNAME", value = var.db_username }
+      ]
+      secrets = [
+        { name = "SPRING_DATASOURCE_PASSWORD", valueFrom = aws_ssm_parameter.db_password.arn },
+        { name = "JWT_SECRET",                 valueFrom = aws_ssm_parameter.jwt_secret.arn }
       ]
       logConfiguration = {
         logDriver = "awslogs"

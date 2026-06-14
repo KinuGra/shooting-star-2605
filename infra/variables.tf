@@ -43,3 +43,27 @@ variable "frontend_memory" {
   type        = number
   default     = 512
 }
+
+variable "db_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+variable "db_username" {
+  description = "PostgreSQL master username"
+  type        = string
+  default     = "shootingstar"
+}
+
+variable "db_password" {
+  description = "PostgreSQL master password"
+  type        = string
+  sensitive   = true
+}
+
+variable "jwt_secret" {
+  description = "JWT signing secret (min 64 chars)"
+  type        = string
+  sensitive   = true
+}

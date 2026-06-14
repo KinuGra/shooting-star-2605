@@ -41,6 +41,25 @@ resource "aws_subnet" "public" {
   }
 }
 
+# Private Subnets for RDS (2 AZs required for DB subnet group)
+resource "aws_subnet" "private_1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "${var.aws_region}a"
+  tags = {
+    Name = "${var.project_name}-private-subnet-1"
+  }
+}
+
+resource "aws_subnet" "private_2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "${var.aws_region}c"
+  tags = {
+    Name = "${var.project_name}-private-subnet-2"
+  }
+}
+
 # Route Table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
