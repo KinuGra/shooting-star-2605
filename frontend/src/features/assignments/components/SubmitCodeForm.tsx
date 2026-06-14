@@ -1,25 +1,33 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
+import type { getSubmissionsResponse } from "@/api/generated/submissions/submissions";
 import {
-  useSubmit,
   useGetSubmissions,
+  useSubmit,
 } from "@/api/generated/submissions/submissions";
-import type { AssignmentResponse, SubmissionResponse, JudgeResultResponse } from "@/api/model";
+import type {
+  AssignmentResponse,
+  JudgeResultResponse,
+  SubmissionResponse,
+} from "@/api/model";
 import { JudgeBadge } from "@/components/Badge";
 import type { JudgeStatus } from "@/lib/types";
 
 const STATUS_PRIORITY: JudgeStatus[] = ["WA", "RE", "CE", "TLE", "MLE", "AC"];
-function overallStatus(results: JudgeResultResponse[] | undefined): JudgeStatus {
+function overallStatus(
+  results: JudgeResultResponse[] | undefined,
+): JudgeStatus {
   if (!results || results.length === 0) return "pending";
   for (const s of STATUS_PRIORITY) {
     if (results.some((r) => r.status === s)) return s;
   }
-  return "AC";
+  // Unknown status (e.g. IE from backend) — show as RE rather than silently falling through to AC
+  return results.some((r) => r.status) ? "RE" : "pending";
 }
 
 const submitSchema = z.object({
@@ -73,16 +81,31 @@ export function SubmitCodeForm({ assignment, courseId }: Props) {
         codeContent: data.codeContent,
         language: data.language,
       });
-      setLastResult(
-        (result as unknown as { data: SubmissionResponse }).data ?? null,
-      );
-      mutate();
+      const newSub =
+        (result as unknown as { data: SubmissionResponse }).data ?? null;
+      setLastResult(newSub);
+      if (newSub) {
+        // Optimistically prepend the new submission so stale cache doesn't briefly
+        // show a previous AC result while SWR revalidates in the background.
+        mutate(
+          (current: getSubmissionsResponse | undefined) =>
+            current
+              ? { ...current, data: [newSub, ...(current.data ?? [])] }
+              : current,
+          { revalidate: true },
+        );
+      } else {
+        mutate();
+      }
     } catch {
       // ignore — error shown via SWR
     }
   };
 
-  const submissions = (submissionsData?.data as SubmissionResponse[]) ?? [];
+  const submissions = [...((submissionsData?.data as SubmissionResponse[]) ?? [])].sort(
+    (a, b) =>
+      new Date(b.submittedAt ?? 0).getTime() - new Date(a.submittedAt ?? 0).getTime(),
+  );
 
   const availableLanguages =
     (assignment.languages ?? []).length > 0 ? assignment.languages! : LANGUAGES;
@@ -322,6 +345,10 @@ export function SubmitCodeForm({ assignment, courseId }: Props) {
                 >
                   提出完了
                 </span>
+                <JudgeBadge
+                  status={overallStatus(lastResult.judgeResults)}
+                  size="sm"
+                />
                 <span
                   style={{
                     fontSize: "0.875rem",
@@ -345,11 +372,34 @@ export function SubmitCodeForm({ assignment, courseId }: Props) {
             background: "var(--color-surface)",
           }}
         >
-          <div style={{ padding: "12px 24px 8px", display: "flex", alignItems: "center", gap: 8 }}>
-            <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div
+            style={{
+              padding: "12px 24px 8px",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <p
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: 600,
+                color: "var(--color-text-muted)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+              }}
+            >
               提出履歴
             </p>
-            <span style={{ fontSize: "0.6875rem", color: "var(--color-text-muted)", background: "var(--color-neutral-surface)", borderRadius: 10, padding: "1px 7px" }}>
+            <span
+              style={{
+                fontSize: "0.6875rem",
+                color: "var(--color-text-muted)",
+                background: "var(--color-neutral-surface)",
+                borderRadius: 10,
+                padding: "1px 7px",
+              }}
+            >
               {submissions.length}件
             </span>
           </div>
@@ -364,22 +414,55 @@ export function SubmitCodeForm({ assignment, courseId }: Props) {
                   alignItems: "center",
                   gap: 12,
                   padding: "10px 24px",
-                  borderBottom: idx < submissions.length - 1 ? "1px solid var(--color-divider)" : "none",
+                  borderBottom:
+                    idx < submissions.length - 1
+                      ? "1px solid var(--color-divider)"
+                      : "none",
                   textDecoration: "none",
                   background: "transparent",
                   transition: "background 0.1s",
                 }}
                 className="card-link"
               >
-                <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", fontVariantNumeric: "tabular-nums" }}>
+                <span
+                  style={{
+                    fontSize: "0.75rem",
+                    color: "var(--color-text-muted)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
                   #{submissions.length - idx}
                 </span>
-                <JudgeBadge status={overallStatus(sub.judgeResults)} size="sm" />
-                <span style={{ fontSize: "0.8125rem", color: "var(--color-text-secondary)" }}>
+                <JudgeBadge
+                  status={overallStatus(sub.judgeResults)}
+                  size="sm"
+                />
+                <span
+                  style={{
+                    fontSize: "0.8125rem",
+                    color: "var(--color-text-secondary)",
+                  }}
+                >
                   {fmtDate(sub.submittedAt ?? "")}
                 </span>
-                <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-text-primary)", fontVariantNumeric: "tabular-nums" }}>
-                  {sub.score ?? "—"}<span style={{ fontWeight: 400, color: "var(--color-text-muted)", fontSize: "0.75rem" }}>/{assignment.maxScore ?? "—"}点</span>
+                <span
+                  style={{
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                    color: "var(--color-text-primary)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
+                  {sub.score ?? "—"}
+                  <span
+                    style={{
+                      fontWeight: 400,
+                      color: "var(--color-text-muted)",
+                      fontSize: "0.75rem",
+                    }}
+                  >
+                    /{assignment.maxScore ?? "—"}点
+                  </span>
                 </span>
               </Link>
             ))}
