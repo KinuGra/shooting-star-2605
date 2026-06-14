@@ -101,7 +101,15 @@ export default function SubmissionsListPage({ params }: Props) {
   const acCount = submissions.filter(
     (s) => overallStatus(s.judgeResults) === "AC",
   ).length;
-  const unreturnedCount = submissions.filter((s) => !s.returned).length;
+  const latestPerUser = new Map<string, SubmissionResponse>();
+  for (const s of submissions) {
+    const uid = s.userId ?? "";
+    const existing = latestPerUser.get(uid);
+    if (!existing || new Date(s.submittedAt ?? "") > new Date(existing.submittedAt ?? "")) {
+      latestPerUser.set(uid, s);
+    }
+  }
+  const unreturnedCount = [...latestPerUser.values()].filter((s) => !s.returned).length;
 
   async function handleReturn() {
     await triggerReturn();
@@ -191,6 +199,21 @@ export default function SubmissionsListPage({ params }: Props) {
             {course.name}
           </p>
         </div>
+        <Link
+          href={`/teacher/classes/${classId}/assignments/${assignmentId}/edit`}
+          style={{
+            fontSize: "0.8125rem",
+            color: "var(--color-text-secondary)",
+            textDecoration: "none",
+            padding: "6px 14px",
+            border: "1px solid var(--color-border)",
+            borderRadius: 6,
+            background: "var(--color-surface)",
+            fontWeight: 500,
+          }}
+        >
+          編集
+        </Link>
       </div>
 
       <div
@@ -220,7 +243,7 @@ export default function SubmissionsListPage({ params }: Props) {
               whiteSpace: "nowrap",
             }}
           >
-            {isReturning ? "返却中..." : `一括返却（${unreturnedCount}件）`}
+            {isReturning ? "返却中..." : `最新提出を一括返却（${unreturnedCount}名）`}
           </button>
         ) : (
           submissions.length > 0 && (
@@ -232,7 +255,7 @@ export default function SubmissionsListPage({ params }: Props) {
                 padding: "8px 0",
               }}
             >
-              ✓ 全員に返却済み
+              ✓ 全員の最新提出を返却済み
             </span>
           )
         )}
@@ -401,33 +424,19 @@ export default function SubmissionsListPage({ params }: Props) {
               <JudgeBadge status={overallStatus(sub.judgeResults)} size="sm" />
 
               {/* Returned */}
-              {sub.returned ? (
-                <span
-                  style={{
-                    fontSize: "0.6875rem",
-                    background: "var(--color-primary-subtle)",
-                    color: "var(--color-primary)",
-                    border: "1px solid var(--color-primary-surface)",
-                    borderRadius: 4,
-                    padding: "2px 8px",
-                    fontWeight: 500,
-                  }}
-                >
-                  返却済
-                </span>
+              {latestPerUser.get(sub.userId ?? "")?.id === sub.id ? (
+                sub.returned ? (
+                  <span style={{ fontSize: "0.6875rem", background: "var(--color-primary-subtle)", color: "var(--color-primary)", border: "1px solid var(--color-primary-surface)", borderRadius: 4, padding: "2px 8px", fontWeight: 500 }}>
+                    返却済
+                  </span>
+                ) : (
+                  <span style={{ fontSize: "0.6875rem", background: "var(--color-warning-surface)", color: "var(--color-warning)", border: "1px solid #fcd68a", borderRadius: 4, padding: "2px 8px", fontWeight: 500 }}>
+                    未返却
+                  </span>
+                )
               ) : (
-                <span
-                  style={{
-                    fontSize: "0.6875rem",
-                    background: "var(--color-warning-surface)",
-                    color: "var(--color-warning)",
-                    border: "1px solid #fcd68a",
-                    borderRadius: 4,
-                    padding: "2px 8px",
-                    fontWeight: 500,
-                  }}
-                >
-                  未返却
+                <span style={{ fontSize: "0.6875rem", background: "var(--color-neutral-surface)", color: "var(--color-text-muted)", border: "1px solid var(--color-border)", borderRadius: 4, padding: "2px 8px", fontWeight: 500 }}>
+                  旧版
                 </span>
               )}
 
